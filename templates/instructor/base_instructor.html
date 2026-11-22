@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+  .inst-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  .inst-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.35rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .inst-stat-card .lbl { font-size: .8125rem; font-weight: 600; color: var(--text-muted); }
+  .inst-stat-card .val { font-size: 1.85rem; font-weight: 800; margin-top: .25rem; font-variant-numeric: tabular-nums; }
+</style>
+{% block inst_extra_head %}{% endblock %}
+{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+  <div class="app-overlay" id="instOverlay" onclick="toggleInstSidebar()"></div>
+
+  <aside class="app-sidebar" id="instSidebar" aria-label="Instructor navigation">
+    <div class="app-sidebar-brand">
+      <div class="app-brand-mark">F</div>
+      <div class="app-brand-text">
+        <strong>FitLife Coach</strong>
+        <span>Instructor Portal</span>
+      </div>
+    </div>
+
+    <nav class="app-sidebar-nav">
+      <a href="{% url 'planner:instructor_dashboard' %}" class="app-nav-link {% if request.resolver_match.url_name == 'instructor_dashboard' %}active{% endif %}">
+        {% include "components/icon.html" with name="dashboard" %} Dashboard
+      </a>
+      <a href="{% url 'planner:instructor_members' %}" class="app-nav-link {% if 'instructor_member' in request.resolver_match.url_name %}active{% endif %}">
+        {% include "components/icon.html" with name="users" %} My Members
+      </a>
+      <a href="{% url 'planner:instructor_appointments' %}" class="app-nav-link {% if 'instructor_appointment' in request.resolver_match.url_name %}active{% endif %}">
+        {% include "components/icon.html" with name="calendar" %} Appointments
+      </a>
+      <a href="{% url 'planner:instructor_schedule' %}" class="app-nav-link {% if request.resolver_match.url_name == 'instructor_schedule' %}active{% endif %}">
+        {% include "components/icon.html" with name="clock" %} My Schedule
+      </a>
+      <a href="{% url 'planner:instructor_workout_plans' %}" class="app-nav-link {% if 'instructor_workout_plan' in request.resolver_match.url_name %}active{% endif %}">
+        {% include "components/icon.html" with name="dumbbell" %} Workout Plans
+      </a>
+      <a href="{% url 'planner:instructor_assessments' %}" class="app-nav-link {% if request.resolver_match.url_name == 'instructor_assessments' %}active{% endif %}">
+        {% include "components/icon.html" with name="clipboard" %} Fitness Assessments
+      </a>
+      <a href="{% url 'planner:instructor_progress' %}" class="app-nav-link {% if request.resolver_match.url_name == 'instructor_progress' %}active{% endif %}">
+        {% include "components/icon.html" with name="trending-up" %} Progress Tracking
+      </a>
+      <a href="{% url 'planner:instructor_profile_settings' %}" class="app-nav-link {% if request.resolver_match.url_name == 'instructor_profile_settings' %}active{% endif %}">
+        {% include "components/icon.html" with name="settings" %} Profile &amp; Settings
+      </a>
+    </nav>
+
+    <div class="app-sidebar-footer">
+      <div class="app-sidebar-user">
+        <div class="app-user-avatar">{{ instructor.name|slice:":1"|upper }}</div>
+        <div class="app-user-meta">
+          <strong>{{ instructor.name }}</strong>
+          <small>{{ instructor.specialty }}</small>
+        </div>
+      </div>
+      <form action="{% url 'logout' %}" method="post" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost btn-sm" style="color:#CBD5E1;" aria-label="Logout">
+          {% include "components/icon.html" with name="logout" %}
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <div class="app-topbar-left">
+        <button type="button" class="app-menu-btn" onclick="toggleInstSidebar()" aria-label="Open instructor menu">
+          {% include "components/icon.html" with name="menu" %}
+        </button>
+        <span style="font-weight:700; font-size:.95rem; color:var(--text);">FitLife Coach</span>
+      </div>
+      <span class="badge badge-info">{{ instructor.specialty }}</span>
+    </header>
+
+    <main id="main-content" class="app-content">
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block inst_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script>
+  function toggleInstSidebar() {
+    document.getElementById('instSidebar').classList.toggle('open');
+    document.getElementById('instOverlay').classList.toggle('open');
+  }
+</script>
+{% endblock %}

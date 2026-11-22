@@ -1,0 +1,83 @@
+{% extends "planner/base_admin.html" %}
+
+{% block title %}User Directory — FitLife Admin{% endblock %}
+
+{% block admin_content %}
+  {% include "components/page_header.html" with title="User Directory" subtitle="Browse all registered members, instructors, and staff accounts." parent_label="Overview" parent_url="/admin-dashboard/" action_label="Django Admin" action_url="/admin/auth/user/" %}
+
+  <div class="dir-card">
+    <div class="dir-card-header" style="flex-wrap:wrap; gap:.75rem;">
+      <span>Registered Accounts (<span class="tabular-nums">{{ total_users }}</span>)</span>
+      <input type="search" id="userSearch" class="form-control" placeholder="Search username, email, or goal..." aria-label="Search users" style="max-width:280px;">
+    </div>
+    <div class="table-wrap">
+      {% if user_rows %}
+      <table class="fl-table" id="usersTable">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Email</th>
+            <th>Age</th>
+            <th>Height</th>
+            <th>Weight</th>
+            <th>BMI</th>
+            <th>Fitness Goal</th>
+            <th>Daily Calories</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in user_rows %}
+          <tr>
+            <td>
+              <div class="user-name-cell">
+                <span class="user-avatar">{{ row.user.username|slice:":1"|upper }}</span>
+                <strong>{{ row.user.username }}</strong>
+              </div>
+            </td>
+            <td>
+              {% if row.user.is_staff %}
+                {% include "components/status_badge.html" with text="Admin" variant="neutral" %}
+              {% elif row.profile.role == 'instructor' %}
+                {% include "components/status_badge.html" with text="Instructor" variant="success" %}
+              {% else %}
+                {% include "components/status_badge.html" with text="Member" variant="info" %}
+              {% endif %}
+            </td>
+            <td>{{ row.user.email|default:"—" }}</td>
+            <td class="tabular-nums">{{ row.profile.age|default:"—" }}</td>
+            <td class="tabular-nums">{{ row.profile.height_cm|default:"—" }}{% if row.profile.height_cm %} cm{% endif %}</td>
+            <td class="tabular-nums">{{ row.profile.weight_kg|default:"—" }}{% if row.profile.weight_kg %} kg{% endif %}</td>
+            <td class="tabular-nums"><strong>{{ row.bmi|default:"—" }}</strong></td>
+            <td>
+              {% if row.profile.fitness_goal %}
+                <span class="tbl-goal-pill {{ row.profile.fitness_goal }}">{{ row.profile.get_fitness_goal_display }}</span>
+              {% else %}
+                {% include "components/status_badge.html" with text="Not Selected" variant="neutral" %}
+              {% endif %}
+            </td>
+            <td class="tabular-nums">{% if row.calories %}<strong>{{ row.calories }}</strong> kcal{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div style="padding:2rem;">
+          {% include "components/empty_state.html" with title="No user profiles found" message="Registered accounts will appear here." %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    const userSearch = document.getElementById('userSearch');
+    if (userSearch) {
+      userSearch.addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#usersTable tbody tr').forEach(row => {
+          row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+      });
+    }
+  </script>
+{% endblock %}

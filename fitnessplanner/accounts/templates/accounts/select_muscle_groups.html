@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Choose Muscle Groups to Focus On — FitLife{% endblock %}
+
+{% block extra_head %}
+<style>
+  .muscle-selection-page {
+    min-height: calc(100vh - 180px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.25rem;
+    background: 
+      radial-gradient(circle at 10% 20%, rgba(249, 115, 22, 0.08) 0%, transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 45%),
+      var(--bg);
+  }
+
+  .muscle-container {
+    max-width: 1200px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .muscle-header {
+    margin-bottom: 3rem;
+  }
+
+  .muscle-header h1 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .muscle-header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .muscle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .muscle-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .muscle-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent-light);
+    box-shadow: var(--shadow);
+  }
+
+  .muscle-card.selected {
+    border-color: var(--accent);
+    background: rgba(249, 115, 22, 0.02);
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15), var(--shadow);
+  }
+
+  .muscle-card.selected::after {
+    content: "✓";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    box-shadow: 0 3px 8px rgba(249, 115, 22, 0.3);
+    z-index: 10;
+  }
+
+  .muscle-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background: var(--bg-soft);
+    overflow: hidden;
+  }
+
+  .muscle-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .muscle-card:hover .muscle-image-wrapper img {
+    transform: scale(1.06);
+  }
+
+  .muscle-image-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.5) 100%);
+  }
+
+  .muscle-card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: space-between;
+  }
+
+  .muscle-card-title-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .muscle-card-body h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .muscle-subtitle {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    display: inline-block;
+    margin-top: 0.15rem;
+  }
+
+  .muscle-card-body p {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    flex-grow: 1;
+  }
+
+  .btn-select {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    border: 1px solid var(--border);
+    background: var(--bg-soft);
+    color: var(--text-muted);
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+
+  .muscle-card.selected .btn-select {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .submit-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .btn-submit-muscles {
+    padding: 0.9rem 2.8rem;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    min-width: 250px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .btn-submit-muscles:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+    background: #ea580c;
+  }
+
+  .btn-submit-muscles:disabled {
+    background: var(--text-light);
+    color: rgba(255, 255, 255, 0.8);
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="muscle-selection-page">
+  <div class="muscle-container">
+    
+    <div class="muscle-header">
+      <h1>Choose Muscle Groups to Focus On</h1>
+      <p>Select one or more muscle groups you want to build and strengthen. We will tailor your target areas accordingly.</p>
+    </div>
+
+    {% if error %}
+      <div class="alert alert-error" style="max-width: 500px; margin: 0 auto 2rem;">
+        {{ error }}
+      </div>
+    {% endif %}
+
+    <form method="post" id="muscle-form">
+      {% csrf_token %}
+
+      <div class="muscle-grid">
+        {% for m in muscle_groups %}
+          <!-- Muscle Card: {{ m.name }} -->
+          <div class="muscle-card {% if m.is_selected %}selected{% endif %}" data-slug="{{ m.slug }}" onclick="toggleMuscle('{{ m.slug }}')">
+            <input type="checkbox" name="muscle_groups" value="{{ m.slug }}" id="cb-{{ m.slug }}" class="muscle-checkbox" {% if m.is_selected %}checked{% endif %} style="display: none;">
+            
+            <div class="muscle-image-wrapper">
+              <img src="{% static m.image %}" alt="{{ m.name }}">
+              <div class="muscle-image-overlay"></div>
+            </div>
+
+            <div class="muscle-card-body">
+              <div>
+                <div class="muscle-card-title-group">
+                  <h3>{{ m.name }}</h3>
+                  <span class="muscle-subtitle">{{ m.subtitle }}</span>
+                </div>
+                <p>{{ m.desc }}</p>
+              </div>
+              <button type="button" class="btn-select">
+                {% if m.is_selected %}Focusing{% else %}Focus Group{% endif %}
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="submit-container">
+        <button type="submit" class="btn-submit-muscles" id="submit-btn" disabled>
+          Save &amp; Continue &rarr;
+        </button>
+        <p class="text-muted" style="font-size: 0.88rem;">Select at least one muscle group to unlock your plan.</p>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+  function toggleMuscle(slug) {
+    const card = document.querySelector(`.muscle-card[data-slug="${slug}"]`);
+    const cb = document.getElementById(`cb-${slug}`);
+    const btn = card.querySelector('.btn-select');
+    
+    if (cb.checked) {
+      cb.checked = false;
+      card.classList.remove('selected');
+      btn.innerText = 'Focus Group';
+    } else {
+      cb.checked = true;
+      card.classList.add('selected');
+      btn.innerText = 'Focusing';
+    }
+    
+    validateSelection();
+  }
+
+  function validateSelection() {
+    const checkboxes = document.querySelectorAll('.muscle-checkbox');
+    const submitBtn = document.getElementById('submit-btn');
+    let anyChecked = false;
+    
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        anyChecked = true;
+      }
+    });
+    
+    if (anyChecked) {
+      submitBtn.removeAttribute('disabled');
+    } else {
+      submitBtn.setAttribute('disabled', 'true');
+    }
+  }
+
+  // Run validation on load to enable button if options are pre-selected
+  document.addEventListener('DOMContentLoaded', validateSelection);
+</script>
+{% endblock %}

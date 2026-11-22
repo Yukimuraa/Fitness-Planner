@@ -1,0 +1,67 @@
+{% extends "planner/base_admin.html" %}
+
+{% block title %}Add Instructor — FitLife Admin{% endblock %}
+
+{% block admin_content %}
+  {% include "components/page_header.html" with title="Add New Instructor" subtitle="Create an instructor profile and temporary login credentials." parent_label="Instructors" parent_url="/admin-dashboard/instructors/" action_label="View Instructors" action_url="/admin-dashboard/instructors/" %}
+
+  <div class="card card-form" style="max-width:780px;">
+    <div class="card-header">Instructor Account Details</div>
+    <div class="card-body">
+      <form method="post" action="{% url 'planner:admin_instructor_create' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="inst-form-grid">
+          <div class="form-group">
+            <label class="form-label" for="{{ instructor_form.name.id_for_label }}">Full Name</label>
+            {{ instructor_form.name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ instructor_form.email.id_for_label }}">Email</label>
+            {{ instructor_form.email }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ instructor_form.contact_number.id_for_label }}">Contact Number</label>
+            {{ instructor_form.contact_number }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ instructor_form.specialty.id_for_label }}">Specialization</label>
+            {{ instructor_form.specialty }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ instructor_form.experience_years.id_for_label }}">Experience (yrs)</label>
+            {{ instructor_form.experience_years }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ instructor_form.status.id_for_label }}">Account Status</label>
+            {{ instructor_form.status }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ instructor_form.username.id_for_label }}">Login Username</label>
+            {{ instructor_form.username }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ instructor_form.temporary_password.id_for_label }}">Temporary Password</label>
+            {{ instructor_form.temporary_password }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ instructor_form.profile_photo.id_for_label }}">Profile Photo</label>
+          {{ instructor_form.profile_photo }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ instructor_form.available_days.id_for_label }}">Available Days</label>
+          {{ instructor_form.available_days }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ instructor_form.certification.id_for_label }}">Certifications &amp; Qualifications</label>
+          {{ instructor_form.certification }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ instructor_form.bio.id_for_label }}">Biography</label>
+          {{ instructor_form.bio }}
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:.5rem;">Create Instructor Account</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "instructor/base_instructor.html" %}
+
+{% block title %}Fitness Assessments — FitLife Instructor{% endblock %}
+
+{% block inst_content %}
+  {% include "components/page_header.html" with title="Fitness Assessments" subtitle="Record fitness screenings, body measurements, and training observations (not medical diagnoses)." parent_label="Dashboard" parent_url="/instructor/" %}
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem;">
+    <div class="card card-form">
+      <div class="card-header">Record New Assessment</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="form-group">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary" style="width:100%;">Save Assessment</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Assessment History (<span class="tabular-nums">{{ assessments|length }}</span>)</div>
+      <div class="table-wrap">
+        {% if assessments %}
+          <table class="fl-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Date</th>
+                <th>Weight</th>
+                <th>BMI</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in assessments %}
+                <tr>
+                  <td><strong>{{ a.member.username }}</strong></td>
+                  <td class="tabular-nums" style="white-space:nowrap;">{{ a.assessed_at|date:"M d, Y" }}</td>
+                  <td class="tabular-nums">{{ a.weight_kg|default:"—" }} kg</td>
+                  <td class="tabular-nums"><strong>{{ a.bmi|default:"—" }}</strong></td>
+                  <td style="font-size:.875rem; color:var(--text-secondary);">
+                    {% if a.waist_cm or a.chest_cm %}
+                      <span class="tabular-nums">Chest {{ a.chest_cm|default:"—" }}cm / Waist {{ a.waist_cm|default:"—" }}cm</span><br>
+                    {% endif %}
+                    {{ a.assessment_notes|default:"—" }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div style="padding:2rem;">
+            {% include "components/empty_state.html" with title="No assessments recorded" message="Record a fitness assessment for an assigned member using the form." %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

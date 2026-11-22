@@ -1,0 +1,148 @@
+{% load static %}<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}FitLife — Diet & Fitness Planner{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    {% block body %}
+    {% if user.is_authenticated %}
+      <div class="app-shell">
+        <div class="app-overlay" id="memberOverlay" onclick="toggleMemberSidebar()"></div>
+
+        <aside class="app-sidebar" id="memberSidebar" aria-label="Member navigation">
+          <div class="app-sidebar-brand">
+            <div class="app-brand-mark">F</div>
+            <div class="app-brand-text">
+              <strong>FitLife</strong>
+              <span>Member Portal</span>
+            </div>
+          </div>
+
+          <nav class="app-sidebar-nav">
+            <div class="app-sidebar-label">Overview</div>
+            <a href="{% url 'planner:index' %}" class="app-nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+              {% include "components/icon.html" with name="dashboard" %} Dashboard
+            </a>
+            <a href="{% url 'planner:smart_suggestions' %}" class="app-nav-link {% if 'suggestions' in request.resolver_match.url_name %}active{% endif %}">
+              {% include "components/icon.html" with name="sparkles" %} Smart Coach
+            </a>
+
+            <div class="app-sidebar-label">Training &amp; Nutrition</div>
+            <a href="{% url 'planner:workout_list' %}" class="app-nav-link {% if 'workout' in request.resolver_match.url_name %}active{% endif %}">
+              {% include "components/icon.html" with name="dumbbell" %} Workouts
+            </a>
+            <a href="{% url 'planner:schedule_list' %}" class="app-nav-link {% if 'schedule' in request.resolver_match.url_name %}active{% endif %}">
+              {% include "components/icon.html" with name="calendar" %} Schedule
+            </a>
+            <a href="{% url 'planner:meal_list' %}" class="app-nav-link {% if 'meal' in request.resolver_match.url_name %}active{% endif %}">
+              {% include "components/icon.html" with name="utensils" %} Meals
+            </a>
+            <a href="{% url 'accounts:progress' %}" class="app-nav-link {% if request.resolver_match.url_name == 'progress' %}active{% endif %}">
+              {% include "components/icon.html" with name="trending-up" %} Fitness Progress
+            </a>
+
+            <div class="app-sidebar-label">Coaching &amp; Plans</div>
+            <a href="{% url 'planner:instructor_list' %}" class="app-nav-link {% if 'instructor' in request.resolver_match.url_name %}active{% endif %}">
+              {% include "components/icon.html" with name="users" %} Appointments
+            </a>
+            <a href="{% url 'planner:membership_list' %}" class="app-nav-link {% if 'membership' in request.resolver_match.url_name %}active{% endif %}">
+              {% include "components/icon.html" with name="credit-card" %} Membership
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="app-nav-link {% if 'profile' in request.resolver_match.url_name %}active{% endif %}">
+              {% include "components/icon.html" with name="user" %} Profile
+            </a>
+            {% if user.is_staff %}
+              <a href="{% url 'planner:admin_dashboard' %}" class="app-nav-link">
+                {% include "components/icon.html" with name="shield" %} Admin Portal
+              </a>
+            {% endif %}
+          </nav>
+
+          <div class="app-sidebar-footer">
+            <div class="app-sidebar-user">
+              <div class="app-user-avatar">{{ user.username|slice:":1"|upper }}</div>
+              <div class="app-user-meta">
+                <strong>{{ user.username }}</strong>
+                <small>Member</small>
+              </div>
+            </div>
+            <form action="{% url 'logout' %}" method="post" style="margin:0;">
+              {% csrf_token %}
+              <button class="btn btn-ghost btn-sm" style="color:#CBD5E1;" type="submit" aria-label="Logout">
+                {% include "components/icon.html" with name="logout" %}
+              </button>
+            </form>
+          </div>
+        </aside>
+
+        <div class="app-main">
+          <header class="app-topbar">
+            <div class="app-topbar-left">
+              <button type="button" class="app-menu-btn" onclick="toggleMemberSidebar()" aria-label="Open navigation menu">
+                {% include "components/icon.html" with name="menu" %}
+              </button>
+              <span style="font-weight:700; font-size:.95rem; color:var(--text);">FitLife</span>
+            </div>
+            <div class="flex" style="gap:.75rem;">
+              <a href="{% url 'accounts:profile' %}" class="btn btn-ghost btn-sm">{{ user.username }}</a>
+            </div>
+          </header>
+    {% else %}
+      {% block navbar %}
+      <nav class="fl-navbar" aria-label="Public navigation">
+        <div class="container">
+          <a class="fl-brand" href="/">
+            <span class="fl-brand-mark">F</span>
+            FitLife
+          </a>
+          <ul class="fl-nav">
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="{% url 'register' %}" class="fl-nav-cta">Get started</a></li>
+          </ul>
+        </div>
+      </nav>
+      {% endblock %}
+    {% endif %}
+
+          <main id="main-content" class="{% if user.is_authenticated %}app-content{% endif %}">
+            {% if messages %}
+              <div class="{% if not user.is_authenticated %}container mt-3{% else %}mb-3{% endif %}">
+                {% for message in messages %}
+                  <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+          </main>
+
+          {% block footer %}
+          <footer class="fl-footer">
+            <div class="container">
+              FitLife &copy; {% now "Y" %} — Plan smarter. Move better. Eat right.
+            </div>
+          </footer>
+          {% endblock %}
+
+    {% if user.is_authenticated %}
+        </div>
+      </div>
+
+      <script>
+        function toggleMemberSidebar() {
+          document.getElementById('memberSidebar').classList.toggle('open');
+          document.getElementById('memberOverlay').classList.toggle('open');
+        }
+      </script>
+    {% endif %}
+    {% endblock %}
+  </body>
+</html>

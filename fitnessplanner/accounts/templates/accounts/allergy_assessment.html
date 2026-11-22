@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Allergy &amp; Dietary Assessment — FitLife{% endblock %}
+
+{% block extra_head %}
+<style>
+  .onboard-page {
+    min-height: calc(100vh - 180px);
+    padding: 2.5rem 1.25rem 4rem;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(22, 163, 74, 0.08) 0%, transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(249, 115, 22, 0.08) 0%, transparent 45%),
+      var(--bg);
+  }
+  .onboard-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .step-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .step-pill {
+    padding: .35rem .85rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 700;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .step-pill.done {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #15803d;
+  }
+  .step-pill.current {
+    background: var(--primary, #16a34a);
+    border-color: var(--primary, #16a34a);
+    color: #fff;
+  }
+  .onboard-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .onboard-header h1 {
+    font-size: 2.1rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin: 0 0 .45rem;
+  }
+  .onboard-header p {
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .assess-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.6rem;
+    margin-bottom: 1.35rem;
+  }
+  .assess-card h3 {
+    margin: 0 0 .3rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+  .assess-card .sub {
+    color: var(--text-muted);
+    font-size: .88rem;
+    margin: 0 0 1rem;
+  }
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: .65rem;
+    margin-bottom: 1rem;
+  }
+  .check-chip {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .65rem .85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg, #f8fafc);
+    cursor: pointer;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: border-color .15s, background .15s;
+  }
+  .check-chip:hover {
+    border-color: var(--primary, #16a34a);
+  }
+  .check-chip input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--primary, #16a34a);
+  }
+  .none-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .6rem .95rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    background: #f0fdf4;
+    cursor: pointer;
+    font-size: .9rem;
+    font-weight: 600;
+    color: #15803d;
+  }
+  .onboard-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  @media (max-width: 600px) {
+    .onboard-header h1 { font-size: 1.6rem; }
+    .check-grid { grid-template-columns: 1fr; }
+    .onboard-actions { flex-direction: column-reverse; align-items: stretch; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="onboard-page">
+  <div class="onboard-wrap">
+    {% if not edit_mode %}
+    <div class="step-progress">
+      <span class="step-pill done">1. Account</span>
+      <span class="step-pill done">2. Body Profile</span>
+      <span class="step-pill done">3. Goals</span>
+      <span class="step-pill current">Step 4 of 5: Allergy &amp; Diet</span>
+      <span class="step-pill">5. Review</span>
+    </div>
+    {% endif %}
+
+    <div class="onboard-header">
+      <h1>Allergy &amp; Dietary Assessment</h1>
+      <p>Tell us about any food allergies, intolerances, or dietary preferences so FitLife can safely filter your meal recommendations.</p>
+    </div>
+
+    {% if error %}
+      <div class="alert alert-danger mb-3">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      {% if edit_mode %}
+        <input type="hidden" name="from" value="profile">
+      {% endif %}
+
+      <!-- A. Food Allergies -->
+      <div class="assess-card">
+        <h3>A. Food Allergies</h3>
+        <p class="sub">Select all allergens that apply to you, or check "No known food allergies".</p>
+        <div class="check-grid">
+          {% for a in all_allergens %}
+            <label class="check-chip">
+              <input type="checkbox" name="allergens" value="{{ a.slug }}" class="allergen-cb"
+                {% if a.slug in selected_allergen_slugs %}checked{% endif %}>
+              <span>{{ a.name }}</span>
+            </label>
+          {% endfor %}
+        </div>
+
+        <label class="none-chip" style="margin-bottom:1rem;">
+          <input type="checkbox" name="no_known_allergies" id="noKnownAllergies"
+            {% if diet_profile.no_known_allergies %}checked{% endif %}>
+          <span>No known food allergies</span>
+        </label>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="id_other_allergy">Other allergy (if "Other" selected)</label>
+            <input type="text" id="id_other_allergy" name="other_allergy_name" class="form-control"
+              value="{{ other_allergy_name }}" placeholder="e.g. Kiwi, Mustard, Sulfites">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_allergy_severity">Optional reaction or severity notes</label>
+            <input type="text" id="id_allergy_severity" name="allergy_severity" class="form-control"
+              value="{{ allergy_severity }}" placeholder="e.g. Severe anaphylaxis, hives, mild">
+          </div>
+        </div>
+      </div>
+
+      <!-- B. Food Intolerances -->
+      <div class="assess-card">
+        <h3>B. Food Intolerances</h3>
+        <p class="sub">Kept separate from allergies — helps us tailor digestion-friendly meal options.</p>
+        <div class="check-grid">
+          {% for i in all_intolerances %}
+            <label class="check-chip">
+              <input type="checkbox" name="intolerances" value="{{ i.slug }}" class="intolerance-cb"
+                {% if i.slug in selected_intolerance_slugs %}checked{% endif %}>
+              <span>{{ i.name }}</span>
+            </label>
+          {% endfor %}
+        </div>
+
+        <label class="none-chip" style="margin-bottom:1rem;">
+          <input type="checkbox" name="no_known_intolerances" id="noKnownIntolerances"
+            {% if diet_profile.no_known_intolerances %}checked{% endif %}>
+          <span>None / Not sure</span>
+        </label>
+
+        <div class="form-group">
+          <label class="form-label" for="id_other_intolerance">Other intolerance (if "Other" selected)</label>
+          <input type="text" id="id_other_intolerance" name="other_intolerance_name" class="form-control"
+            value="{{ other_intolerance_name }}" placeholder="e.g. Fructose, Histamine">
+        </div>
+      </div>
+
+      <!-- C. Dietary Preferences -->
+      <div class="assess-card">
+        <h3>C. Dietary Preferences</h3>
+        <p class="sub">Select any eating patterns or dietary preferences you follow.</p>
+        <div class="check-grid">
+          {% for p in all_diet_prefs %}
+            <label class="check-chip">
+              <input type="checkbox" name="dietary_preferences" value="{{ p.slug }}"
+                {% if p.slug in selected_diet_slugs %}checked{% endif %}>
+              <span>{{ p.name }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- D. Other Dietary Restrictions -->
+      <div class="assess-card">
+        <h3>D. Other Dietary Restrictions</h3>
+        <p class="sub">Optional: add any additional dietary notes or healthcare-professional-provided dietary instructions.</p>
+        <div class="form-group" style="margin-bottom:0;">
+          <textarea name="other_restrictions" rows="3" class="form-control"
+            placeholder="e.g. Low-potassium instructions from dietitian, avoid raw shellfish...">{{ diet_profile.other_restrictions }}</textarea>
+        </div>
+      </div>
+
+      <div class="onboard-actions">
+        <a href="{% url back_url %}" class="btn btn-outline">&larr; Back</a>
+        <button type="submit" class="btn btn-primary">
+          {% if edit_mode %}Save Changes{% else %}Continue to Review &rarr;{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const noAllergyCb = document.getElementById('noKnownAllergies');
+  const allergenCbs = document.querySelectorAll('.allergen-cb');
+  noAllergyCb.addEventListener('change', () => {
+    if (noAllergyCb.checked) allergenCbs.forEach(cb => cb.checked = false);
+  });
+  allergenCbs.forEach(cb => cb.addEventListener('change', () => {
+    if (cb.checked) noAllergyCb.checked = false;
+  }));
+
+  const noIntolCb = document.getElementById('noKnownIntolerances');
+  const intolCbs = document.querySelectorAll('.intolerance-cb');
+  noIntolCb.addEventListener('change', () => {
+    if (noIntolCb.checked) intolCbs.forEach(cb => cb.checked = false);
+  });
+  intolCbs.forEach(cb => cb.addEventListener('change', () => {
+    if (cb.checked) noIntolCb.checked = false;
+  }));
+</script>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Portal Login — FitLife{% endblock %}
+
+{% block extra_head %}
+<style>
+  .admin-login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: var(--bg);
+  }
+  .admin-login-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .admin-login-banner {
+    background: #0F172A;
+    color: #FFFFFF;
+    padding: 1.75rem 1.5rem;
+    text-align: center;
+    border-bottom: 3px solid var(--primary);
+  }
+  .admin-login-banner h1 {
+    margin: .5rem 0 .25rem;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #FFFFFF;
+  }
+  .admin-login-banner p {
+    margin: 0;
+    font-size: .88rem;
+    color: #94A3B8;
+  }
+  .admin-login-body {
+    padding: 1.65rem 1.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<main id="main-content" class="admin-login-wrap">
+  <div class="admin-login-card">
+    <div class="admin-login-banner">
+      <div style="display:inline-flex; padding:.6rem; border-radius:12px; background:rgba(22,163,74,.18); color:#4ADE80;">
+        {% include "components/icon.html" with name="shield" %}
+      </div>
+      <h1>Admin Management Portal</h1>
+      <p>Sign in with your staff account to manage users &amp; instructors</p>
+    </div>
+    <div class="admin-login-body">
+      {% if error %}
+        <div class="alert alert-danger" style="margin-bottom: 1rem;">{{ error }}</div>
+      {% endif %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label" for="id_username">Admin Username</label>
+          <input id="id_username" type="text" name="username" class="form-control" placeholder="Enter admin username" required autofocus>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_password">Password</label>
+          <input id="id_password" type="password" name="password" class="form-control" placeholder="Enter admin password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:.5rem;">
+          Sign In to Admin Dashboard
+        </button>
+      </form>
+      <div style="text-align:center; margin-top: 1.15rem; font-size:.875rem; color:var(--text-muted);">
+        Not an admin? <a href="{% url 'login' %}" style="font-weight:600;">Go to Member Login</a>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

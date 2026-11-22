@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Track progress — FitLife{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Track progress</h1>
+      <p class="page-subtitle">Log weight and notes to see how you're improving over time.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'accounts:profile' %}">Back to profile</a>
+  </div>
+
+  <div class="card card-form mb-3">
+    <div class="card-header">Log new entry</div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="form-group">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="errorlist">{{ field.errors|striptags }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">Save entry</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Progress history</div>
+    <div class="card-body">
+      {% if entries %}
+        <ul class="item-list">
+          {% for e in entries %}
+            <li>
+              <div>
+                <div class="name">{{ e.recorded_at|date:"l, F j, Y" }}</div>
+                <div class="desc">
+                  {% if e.weight_kg %}Weight: {{ e.weight_kg }} kg{% endif %}
+                  {% if e.notes %}{% if e.weight_kg %} &middot; {% endif %}{{ e.notes }}{% endif %}
+                  {% if not e.weight_kg and not e.notes %}—{% endif %}
+                </div>
+              </div>
+              <form method="post" action="{% url 'accounts:progress_delete' e.pk %}" style="margin:0;">
+                {% csrf_token %}
+                <button class="btn btn-ghost btn-sm" type="submit">Delete</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state">
+          <h4>No entries yet</h4>
+          <p>Use the form above to log your first weigh-in or milestone.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

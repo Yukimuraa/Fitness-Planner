@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule — FitLife{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">My schedule</h1>
+      <p class="page-subtitle">Your upcoming and past workout sessions.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'planner:schedule_create' %}">+ Schedule workout</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      {% if schedules %}
+        <ul class="item-list">
+          {% for s in schedules %}
+            <li>
+              <div>
+                <div class="name">{{ s.workout.name }}</div>
+                <div class="desc">
+                  {{ s.date|date:"l, F j, Y" }} &middot; {{ s.workout.duration_min }} min
+                </div>
+              </div>
+              <div class="flex">
+                {% if s.completed %}
+                  <span class="badge badge-success">Completed</span>
+                {% else %}
+                  <span class="badge">Pending</span>
+                {% endif %}
+                <form method="post" action="{% url 'planner:schedule_toggle' s.pk %}" style="margin:0;">
+                  {% csrf_token %}
+                  <button class="btn btn-outline btn-sm" type="submit">
+                    {% if s.completed %}Undo{% else %}Mark done{% endif %}
+                  </button>
+                </form>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state">
+          <h4>Nothing scheduled yet</h4>
+          <p>Plan your first session to start tracking your progress.</p>
+          <a class="btn btn-primary" href="{% url 'planner:schedule_create' %}">+ Schedule a workout</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

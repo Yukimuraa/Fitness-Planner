@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Choose Your Fitness Goal — FitLife{% endblock %}
+
+{% block extra_head %}
+<style>
+  .goal-selection-page {
+    min-height: calc(100vh - 180px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.25rem;
+    background: 
+      radial-gradient(circle at 10% 20%, rgba(22, 163, 74, 0.08) 0%, transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(249, 115, 22, 0.08) 0%, transparent 45%),
+      var(--bg);
+  }
+
+  .goal-container {
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .goal-header {
+    margin-bottom: 3rem;
+  }
+
+  .goal-header h1 {
+    font-size: 2.5rem;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--text) 0%, var(--primary-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .goal-header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .goal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  @media (max-width: 640px) {
+    .goal-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .goal-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .goal-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow);
+  }
+
+  .goal-card.selected {
+    border-color: var(--primary);
+    background: rgba(22, 163, 74, 0.03);
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15), var(--shadow);
+  }
+
+  .goal-card.selected::after {
+    content: "✓";
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    box-shadow: 0 3px 8px rgba(22, 163, 74, 0.3);
+  }
+
+  .goal-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    background: var(--bg-soft);
+    transition: all 0.3s ease;
+  }
+
+  /* Custom icon backgrounds based on goals */
+  .goal-card[data-goal="lose_weight"] .goal-icon-wrapper {
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--primary);
+  }
+  .goal-card[data-goal="build_muscle"] .goal-icon-wrapper {
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--accent);
+  }
+  .goal-card[data-goal="maintain_weight"] .goal-icon-wrapper {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+  }
+  .goal-card[data-goal="improve_fitness"] .goal-icon-wrapper {
+    background: rgba(14, 165, 233, 0.1);
+    color: var(--info);
+  }
+
+  .goal-card.selected[data-goal="lose_weight"] {
+    border-color: var(--primary);
+  }
+  .goal-card.selected[data-goal="build_muscle"] {
+    border-color: var(--accent);
+  }
+  .goal-card.selected[data-goal="maintain_weight"] {
+    border-color: #6366f1;
+  }
+  .goal-card.selected[data-goal="improve_fitness"] {
+    border-color: var(--info);
+  }
+
+  .goal-card.selected[data-goal="lose_weight"]::after { background: var(--primary); }
+  .goal-card.selected[data-goal="build_muscle"]::after { background: var(--accent); }
+  .goal-card.selected[data-goal="maintain_weight"]::after { background: #6366f1; }
+  .goal-card.selected[data-goal="improve_fitness"]::after { background: var(--info); }
+
+  .goal-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  .goal-card p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .submit-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .btn-submit-goal {
+    padding: 0.9rem 2.5rem;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    min-width: 220px;
+    transition: all 0.2s ease;
+  }
+
+  .btn-submit-goal:disabled {
+    background: var(--text-light);
+    color: rgba(255, 255, 255, 0.8);
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="goal-selection-page">
+  <div class="goal-container">
+    
+    <div class="goal-header">
+      <h1>What is your main goal?</h1>
+      <p>We'll use this to tailor your daily calorie recommendations and personalize your meal recommendations.</p>
+    </div>
+
+    {% if error %}
+      <div class="alert alert-error max-width: 500px; margin: 0 auto 2rem;">
+        {{ error }}
+      </div>
+    {% endif %}
+
+    <form method="post" id="goal-form">
+      {% csrf_token %}
+      <input type="hidden" name="fitness_goal" id="selected-goal-input" value="{{ profile.fitness_goal }}">
+
+      <div class="goal-grid">
+        <!-- Card 1: Lose Weight -->
+        <div class="goal-card {% if profile.fitness_goal == 'lose_weight' %}selected{% endif %}" data-goal="lose_weight">
+          <div>
+            <div class="goal-icon-wrapper">
+              🥗
+            </div>
+            <h3>Lose Weight</h3>
+            <p>Shed fat, tone your body, and improve your metabolic health with a calorie-controlled plan.</p>
+          </div>
+        </div>
+
+        <!-- Card 2: Build Muscle -->
+        <div class="goal-card {% if profile.fitness_goal == 'build_muscle' %}selected{% endif %}" data-goal="build_muscle">
+          <div>
+            <div class="goal-icon-wrapper">
+              💪
+            </div>
+            <h3>Build Muscle</h3>
+            <p>Gain strength, increase lean muscle mass, and fuel workouts with protein-rich guidelines.</p>
+          </div>
+        </div>
+
+        <!-- Card 3: Maintain Weight -->
+        <div class="goal-card {% if profile.fitness_goal == 'maintain_weight' %}selected{% endif %}" data-goal="maintain_weight">
+          <div>
+            <div class="goal-icon-wrapper">
+              ⚖️
+            </div>
+            <h3>Maintain Weight</h3>
+            <p>Keep your current weight, lock in your healthy habits, and improve overall body composition.</p>
+          </div>
+        </div>
+
+        <!-- Card 4: Improve Fitness -->
+        <div class="goal-card {% if profile.fitness_goal == 'improve_fitness' %}selected{% endif %}" data-goal="improve_fitness">
+          <div>
+            <div class="goal-icon-wrapper">
+              ⚡
+            </div>
+            <h3>Improve Fitness</h3>
+            <p>Increase cardiovascular endurance, boost energy levels, and enhance athletic performance.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-container">
+        <button type="submit" class="btn btn-primary btn-submit-goal" id="submit-btn" {% if not profile.fitness_goal %}disabled{% endif %}>
+          Confirm &amp; Continue &rarr;
+        </button>
+        <p class="text-muted" style="font-size: 0.88rem;">You can change your goal anytime in your profile settings.</p>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.goal-card');
+    const hiddenInput = document.getElementById('selected-goal-input');
+    const submitBtn = document.getElementById('submit-btn');
+
+    cards.forEach(card => {
+      card.addEventListener('click', function() {
+        // Remove selection from all cards
+        cards.forEach(c => c.classList.remove('selected'));
+        
+        // Add selection to clicked card
+        this.classList.add('selected');
+        
+        // Update input value
+        const goal = this.getAttribute('data-goal');
+        hiddenInput.value = goal;
+        
+        // Enable submit button
+        submitBtn.removeAttribute('disabled');
+
+        // Optional micro-animation: dynamic button text color based on selected goal
+        if (goal === 'lose_weight') {
+          submitBtn.style.background = 'var(--primary)';
+        } else if (goal === 'build_muscle') {
+          submitBtn.style.background = 'var(--accent)';
+        } else if (goal === 'maintain_weight') {
+          submitBtn.style.background = '#6366f1';
+        } else if (goal === 'improve_fitness') {
+          submitBtn.style.background = 'var(--info)';
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

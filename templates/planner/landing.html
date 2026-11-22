@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}FitLife — Your personal diet & fitness planner{% endblock %}
+
+{% block content %}
+<section class="landing-hero">
+  <div class="container">
+    <h1>Plan your <span class="accent">diet</span> &amp; <span class="accent">fitness</span><br>like a pro athlete.</h1>
+    <p>FitLife brings your meals, workouts, and weekly schedule together in one beautiful planner — so you can stop guessing and start progressing.</p>
+    <div class="cta-row">
+      <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Get started — it's free</a>
+      <a href="{% url 'login' %}" class="btn btn-outline btn-lg">I already have an account</a>
+    </div>
+  </div>
+</section>
+
+<section class="container">
+  <div class="feature-grid">
+    <div class="feature">
+      <div class="ic">&#127869;</div>
+      <h4>Custom meal plans</h4>
+      <p>Build meals from real food, track calories, protein, carbs and fats. Save your favourites and reuse them.</p>
+    </div>
+    <div class="feature alt">
+      <div class="ic">&#128170;</div>
+      <h4>Strength &amp; cardio workouts</h4>
+      <p>Create your own routines or pick from popular templates. Set durations and stay focused.</p>
+    </div>
+    <div class="feature cool">
+      <div class="ic">&#128197;</div>
+      <h4>Weekly schedule</h4>
+      <p>Plan workouts on a calendar, mark sessions complete, and see your weekly progress at a glance.</p>
+    </div>
+    <div class="feature">
+      <div class="ic">&#128202;</div>
+      <h4>Progress insights</h4>
+      <p>Watch your weekly completion rate, total active minutes, and BMI evolve over time.</p>
+    </div>
+    <div class="feature alt">
+      <div class="ic">&#127942;</div>
+      <h4>Goal tracking</h4>
+      <p>Set daily calorie goals and preferred workout times that fit your lifestyle.</p>
+    </div>
+    <div class="feature cool">
+      <div class="ic">&#128274;</div>
+      <h4>Private &amp; secure</h4>
+      <p>Your data stays yours. Built with Django authentication and CSRF protection.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

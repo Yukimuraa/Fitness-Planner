@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — FitLife{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ title }}</h1>
+      <p class="page-subtitle">Pick a workout from your library and choose a day.</p>
+    </div>
+  </div>
+
+  {% if not has_workouts %}
+    <div class="alert alert-warning mb-3">
+      No workouts in your library yet.
+      <a href="{% url 'planner:workout_create' %}">Add a workout</a> first, then come back to schedule it.
+    </div>
+  {% endif %}
+
+  <div class="card card-form">
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% for field in form %}
+          <div class="form-group">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<small class="form-text">{{ field.help_text }}</small>{% endif %}
+            {% if field.errors %}<div class="errorlist">{{ field.errors|striptags }}</div>{% endif %}
+          </div>
+        {% endfor %}
+
+        <div class="flex mt-2">
+          <button class="btn btn-primary" type="submit" {% if not has_workouts %}disabled{% endif %}>Save to schedule</button>
+          <a class="btn btn-ghost" href="{% url 'planner:schedule_list' %}">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

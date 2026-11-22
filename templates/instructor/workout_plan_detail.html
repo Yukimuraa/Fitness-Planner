@@ -1,0 +1,78 @@
+{% extends "instructor/base_instructor.html" %}
+
+{% block title %}{{ plan.title }} — Workout Plan{% endblock %}
+
+{% block inst_content %}
+  {% include "components/page_header.html" with title=plan.title subtitle="Member: "|add:plan.member.username parent_label="Workout Plans" parent_url="/instructor/workout-plans/" action_label="All Plans" action_url="/instructor/workout-plans/" %}
+
+  <div class="metric-grid">
+    {% include "components/metric_card.html" with label="Weekly Frequency" value=plan.frequency_per_week meta="days / week" %}
+    {% include "components/metric_card.html" with label="Exercises" value=plan.exercises.count meta="Structured movements" %}
+    {% include "components/metric_card.html" with label="Target Goal" value=plan.fitness_goal|default:"Custom" meta=plan.target_muscle_groups|default:"Full Body" %}
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem;">
+    <div class="card card-form">
+      <div class="card-header">Add Exercise to Plan</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="op" value="add_exercise">
+          <div class="form-group">
+            <label class="form-label" for="id_ex_name">Exercise Name</label>
+            <input id="id_ex_name" type="text" name="exercise_name" class="form-control" placeholder="e.g. Goblet Squat" required>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="id_ex_sets">Sets</label>
+              <input id="id_ex_sets" type="number" name="sets" class="form-control" value="3" min="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="id_ex_reps">Reps</label>
+              <input id="id_ex_reps" type="text" name="reps" class="form-control" value="10-12">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="id_ex_dur">Duration (min, opt.)</label>
+              <input id="id_ex_dur" type="number" name="duration_min" class="form-control" value="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="id_ex_rest">Rest (sec)</label>
+              <input id="id_ex_rest" type="number" name="rest_seconds" class="form-control" value="60" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_ex_inst">Instructions</label>
+            <textarea id="id_ex_inst" name="instructions" rows="2" class="form-control" placeholder="Form cues and tempo..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Add Exercise</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Exercises (<span class="tabular-nums">{{ plan.exercises.count }}</span>)</div>
+      <div class="card-body">
+        {% for ex in plan.exercises.all %}
+          <div style="padding:.75rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:.75rem;">
+            <div>
+              <strong>{{ forloop.counter }}. {{ ex.exercise_name }}</strong>
+              <div class="tabular-nums" style="font-size:.875rem; color:var(--text-muted);">
+                {{ ex.sets }} sets &times; {{ ex.reps }} reps &bull; Rest {{ ex.rest_seconds }}s
+                {% if ex.duration_min %}&bull; {{ ex.duration_min }} min{% endif %}
+              </div>
+              {% if ex.instructions %}<div style="font-size:.875rem; margin-top:.2rem; color:var(--text-secondary);">{{ ex.instructions }}</div>{% endif %}
+            </div>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="op" value="delete_exercise">
+              <input type="hidden" name="exercise_id" value="{{ ex.pk }}">
+              <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+            </form>
+          </div>
+        {% empty %}
+          {% include "components/empty_state.html" with title="No exercises added" message="Add exercises using the form on the left." %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

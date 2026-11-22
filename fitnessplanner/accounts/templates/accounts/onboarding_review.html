@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Review &amp; Complete — FitLife{% endblock %}
+
+{% block extra_head %}
+<style>
+  .review-page {
+    min-height: calc(100vh - 180px);
+    padding: 2.5rem 1.25rem 4rem;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(22, 163, 74, 0.08) 0%, transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(249, 115, 22, 0.08) 0%, transparent 45%),
+      var(--bg);
+  }
+  .review-wrap {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+  .step-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .step-pill {
+    padding: .35rem .85rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 700;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .step-pill.done {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #15803d;
+  }
+  .step-pill.current {
+    background: var(--primary, #16a34a);
+    border-color: var(--primary, #16a34a);
+    color: #fff;
+  }
+  .review-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .review-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .85rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: .6rem;
+  }
+  .review-card-head h3 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+  .review-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: .85rem;
+    font-size: .9rem;
+  }
+  .onboard-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-page">
+  <div class="review-wrap">
+    <div class="step-progress">
+      <span class="step-pill done">1. Account</span>
+      <span class="step-pill done">2. Body Profile</span>
+      <span class="step-pill done">3. Goals</span>
+      <span class="step-pill done">4. Allergy &amp; Diet</span>
+      <span class="step-pill current">Step 5 of 5: Review &amp; Complete</span>
+    </div>
+
+    <div style="text-align:center; margin-bottom:2rem;">
+      <h1 style="font-size:2.1rem; font-weight:800; margin:0 0 .4rem;">Review Your Profile</h1>
+      <p style="color:var(--text-muted); margin:0;">Confirm your fitness goals and allergy safety settings before entering your personalized dashboard.</p>
+    </div>
+
+    <div class="review-card">
+      <div class="review-card-head">
+        <h3>Body &amp; Fitness Profile</h3>
+        <a href="{% url 'accounts:select_goal' %}" class="btn btn-ghost btn-sm">Edit Goal</a>
+      </div>
+      <div class="review-grid">
+        <div><strong>Age:</strong> {{ profile.age|default:"—" }}</div>
+        <div><strong>Gender:</strong> {{ profile.get_gender_display_short }}</div>
+        <div><strong>Height:</strong> {{ profile.height_cm|default:"—" }} cm</div>
+        <div><strong>Weight:</strong> {{ profile.weight_kg|default:"—" }} kg</div>
+        <div><strong>Goal:</strong> {{ profile.get_fitness_goal_display_short }}</div>
+        <div><strong>Activity:</strong> {{ profile.get_activity_level_display_short }}</div>
+      </div>
+      {% if profile.get_focused_muscles_display %}
+        <div style="margin-top:.85rem; font-size:.88rem;">
+          <strong>Focused Muscles:</strong>
+          {% for m in profile.get_focused_muscles_display %}
+            <span class="badge badge-info">{{ m.name }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="review-card">
+      <div class="review-card-head">
+        <h3>Allergy &amp; Dietary Assessment</h3>
+        <a href="{% url 'accounts:allergy_assessment' %}" class="btn btn-ghost btn-sm">Edit Assessment</a>
+      </div>
+
+      <p style="margin:0 0 .65rem; font-size:.92rem;">
+        <strong>Food Allergies:</strong>
+        {% if diet_profile.no_known_allergies %}
+          <span class="badge badge-success">No known food allergies</span>
+        {% elif member_allergies %}
+          {% for ma in member_allergies %}
+            <span class="badge badge-danger">{{ ma.label }}</span>
+          {% endfor %}
+        {% else %}
+          <span class="text-muted">None specified</span>
+        {% endif %}
+      </p>
+
+      {% if member_allergies and member_allergies.0.severity_notes %}
+        <p style="margin:0 0 .65rem; font-size:.88rem; color:var(--text-muted);">
+          <strong>Reaction / Severity Notes:</strong> {{ member_allergies.0.severity_notes }}
+        </p>
+      {% endif %}
+
+      <p style="margin:0 0 .65rem; font-size:.92rem;">
+        <strong>Food Intolerances:</strong>
+        {% if diet_profile.no_known_intolerances %}
+          <span class="badge badge-info">None / Not sure</span>
+        {% elif member_intolerances %}
+          {% for mi in member_intolerances %}
+            <span class="badge badge-warning">{{ mi.label }}</span>
+          {% endfor %}
+        {% else %}
+          <span class="text-muted">None specified</span>
+        {% endif %}
+      </p>
+
+      <p style="margin:0 0 .65rem; font-size:.92rem;">
+        <strong>Dietary Preferences:</strong>
+        {% if dietary_prefs %}
+          {% for dp in dietary_prefs %}
+            <span class="badge badge-info">{{ dp.name }}</span>
+          {% endfor %}
+        {% else %}
+          <span class="text-muted">No specific preference</span>
+        {% endif %}
+      </p>
+
+      {% if diet_profile.other_restrictions %}
+        <p style="margin:0; font-size:.88rem; color:var(--text-muted);">
+          <strong>Other Restrictions / Instructions:</strong> {{ diet_profile.other_restrictions }}
+        </p>
+      {% endif %}
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="onboard-actions">
+        <a href="{% url 'accounts:allergy_assessment' %}" class="btn btn-outline">&larr; Back to Assessment</a>
+        <button type="submit" class="btn btn-primary">Complete &amp; Enter Dashboard &rarr;</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "instructor/base_instructor.html" %}
+
+{% block title %}{{ member.username }} — Member Profile{% endblock %}
+
+{% block inst_content %}
+  {% include "components/page_header.html" with title=member.username subtitle=profile.get_fitness_goal_display_short|add:" • "|add:profile.get_activity_level_display_short parent_label="My Members" parent_url="/instructor/members/" action_label="Back to My Members" action_url="/instructor/members/" %}
+
+  <div class="metric-grid">
+    {% include "components/metric_card.html" with label="Weight" value=profile.weight_kg|default:"—" meta="kg" %}
+    {% include "components/metric_card.html" with label="Height" value=profile.height_cm|default:"—" meta="cm" %}
+    {% include "components/metric_card.html" with label="BMI" value=profile.bmi|default:"—" meta=profile.bmi_category %}
+    {% include "components/metric_card.html" with label="Workout Plans" value=workout_plans|length meta="Assigned by you" %}
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap:1.5rem;">
+    <div class="card">
+      <div class="card-header">Member Overview &amp; Membership</div>
+      <div class="card-body">
+        <p><strong>Age / Gender:</strong> <span class="tabular-nums">{{ profile.age|default:"—" }}</span> / {{ profile.get_gender_display_short }}</p>
+        <p><strong>Fitness Goal:</strong> {{ profile.get_fitness_goal_display_short }}</p>
+        <p><strong>Activity Level:</strong> {{ profile.get_activity_level_display_short }}</p>
+        <p>
+          <strong>Membership:</strong>
+          {% if active_membership %}
+            {% include "components/status_badge.html" with text=active_membership.package.name variant="success" %}
+            <span class="tabular-nums" style="color:var(--text-muted); font-size:.875rem;">({{ active_membership.sessions_remaining }} sessions left)</span>
+          {% else %}
+            {% include "components/status_badge.html" with text="None" variant="neutral" %}
+          {% endif %}
+        </p>
+        {% if profile.get_focused_muscles_display %}
+          <p style="margin-bottom:0;">
+            <strong>Focused Muscle Groups:</strong>
+            {% for m in profile.get_focused_muscles_display %}
+              {% include "components/status_badge.html" with text=m.name variant="info" %}
+            {% endfor %}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card card-form">
+      <div class="card-header">Add Coaching Note / Recommendation</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="add_note" value="1">
+          {% for field in note_form %}
+            <div class="form-group">
+              <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary btn-sm">Save Coaching Note</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>Assigned Workout Plans</span>
+      <a href="{% url 'planner:instructor_workout_plans' %}" class="btn btn-outline btn-sm">Create Plan</a>
+    </div>
+    <div class="card-body">
+      {% if workout_plans %}
+        {% for p in workout_plans %}
+          <div style="padding:.7rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:.75rem;">
+            <div>
+              <strong>{{ p.title }}</strong>
+              <span class="tabular-nums" style="color:var(--text-muted); font-size:.875rem;">({{ p.frequency_per_week }}x/wk &bull; {{ p.exercises.count }} exercises)</span>
+            </div>
+            <a href="{% url 'planner:instructor_workout_plan_detail' p.pk %}" class="btn btn-outline btn-sm">Edit Plan</a>
+          </div>
+        {% endfor %}
+      {% else %}
+        {% include "components/empty_state.html" with title="No workout plans yet" message="Create a custom workout plan for this member." cta_label="Create Workout Plan" cta_url="/instructor/workout-plans/" %}
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap:1.5rem;" class="mt-3">
+    <div class="card">
+      <div class="card-header">Recent Coaching Notes</div>
+      <div class="card-body">
+        {% for n in notes %}
+          <div style="padding:.65rem 0; border-bottom:1px solid var(--border);">
+            {% include "components/status_badge.html" with text=n.get_note_type_display variant="info" %}
+            <strong style="margin-left:.35rem;">{{ n.title }}</strong>
+            <p style="margin:.3rem 0 0; font-size:.9rem; color:var(--text-secondary);">{{ n.content }}</p>
+          </div>
+        {% empty %}
+          {% include "components/empty_state.html" with title="No coaching notes" message="Notes you record for this member will appear here." %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Recent Assessments &amp; Progress</div>
+      <div class="card-body">
+        {% for a in assessments %}
+          <div style="padding:.6rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+            <span class="tabular-nums">{{ a.assessed_at|date:"M d, Y" }}</span>
+            <span class="tabular-nums"><strong>{{ a.weight_kg|default:"—" }} kg</strong> (BMI {{ a.bmi|default:"—" }})</span>
+          </div>
+        {% empty %}
+          {% include "components/empty_state.html" with title="No assessments yet" message="Record a fitness assessment to track body metrics." cta_label="Record Assessment" cta_url="/instructor/assessments/" %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

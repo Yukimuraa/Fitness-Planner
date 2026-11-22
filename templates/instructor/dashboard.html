@@ -1,0 +1,162 @@
+{% extends "instructor/base_instructor.html" %}
+
+{% block title %}Instructor Dashboard — FitLife{% endblock %}
+
+{% block inst_content %}
+  {% include "components/page_header.html" with title="Instructor Dashboard" subtitle=instructor.specialty|add:" • Asia/Manila" action_label="Manage Appointments" action_url="/instructor/appointments/" %}
+
+  <!-- Overview Metrics -->
+  <div class="metric-grid">
+    {% include "components/metric_card.html" with label="Assigned Members" value=assigned_count meta="Active coaching roster" %}
+    {% include "components/metric_card.html" with label="Today's Appointments" value=todays_appointments|length meta=today|date:"M d, Y" %}
+    {% include "components/metric_card.html" with label="Pending Requests" value=pending_requests|length meta="Awaiting your review" %}
+    {% include "components/metric_card.html" with label="Completed Sessions" value=completed_count meta="Total finished" %}
+    {% include "components/metric_card.html" with label="Active Workout Plans" value=active_plans_count meta="Assigned to members" %}
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card mb-3">
+    <div class="card-header">Quick Coaching Actions</div>
+    <div class="card-body" style="display:flex; flex-wrap:wrap; gap:.75rem;">
+      <a href="{% url 'planner:instructor_members' %}" class="btn btn-outline btn-sm">
+        {% include "components/icon.html" with name="users" %} View My Members
+      </a>
+      <a href="{% url 'planner:instructor_appointments' %}" class="btn btn-outline btn-sm">
+        {% include "components/icon.html" with name="calendar" %} Manage Appointments
+      </a>
+      <a href="{% url 'planner:instructor_schedule' %}" class="btn btn-outline btn-sm">
+        {% include "components/icon.html" with name="clock" %} Update My Schedule
+      </a>
+      <a href="{% url 'planner:instructor_workout_plans' %}" class="btn btn-primary btn-sm">
+        {% include "components/icon.html" with name="dumbbell" %} Create Workout Plan
+      </a>
+      <a href="{% url 'planner:instructor_assessments' %}" class="btn btn-outline btn-sm">
+        {% include "components/icon.html" with name="clipboard" %} Record Fitness Assessment
+      </a>
+    </div>
+  </div>
+
+  <!-- Today's Schedule & Pending Requests -->
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
+    <div class="card">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Today's Confirmed Schedule</span>
+        <span class="badge badge-neutral tabular-nums">{{ today|date:"M d, Y" }}</span>
+      </div>
+      <div class="table-wrap">
+        {% if todays_appointments %}
+          <table class="fl-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Member</th>
+                <th>Focus</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in todays_appointments %}
+                <tr>
+                  <td class="tabular-nums" style="white-space:nowrap;"><strong>{{ b.time_slot }}</strong></td>
+                  <td>{{ b.user.username }}</td>
+                  <td>{{ b.focus_area|default:"Coaching Session" }}</td>
+                  <td>{% include "components/status_badge.html" with text="Confirmed" variant="success" %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div style="padding:1.5rem;">
+            {% include "components/empty_state.html" with title="No sessions today" message="Confirmed appointments scheduled for today will appear here." %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Pending Booking Requests</span>
+        <span class="badge badge-warning tabular-nums">{{ pending_requests|length }}</span>
+      </div>
+      <div class="card-body">
+        {% if pending_requests %}
+          {% for b in pending_requests %}
+            <div style="border-bottom:1px solid var(--border); padding:.8rem 0; display:flex; justify-content:space-between; align-items:center; gap:.75rem; flex-wrap:wrap;">
+              <div>
+                <strong>{{ b.user.username }}</strong>
+                <div class="tabular-nums" style="font-size:.875rem; color:var(--text-muted);">{{ b.session_date|date:"M d, Y" }} &bull; {{ b.time_slot }}</div>
+                {% if b.focus_area %}<div style="font-size:.8125rem; color:var(--text-secondary);">Focus: {{ b.focus_area }}</div>{% endif %}
+              </div>
+              <div style="display:flex; gap:.45rem;">
+                <form method="post" action="{% url 'planner:instructor_booking_action' b.pk 'accept' %}">
+                  {% csrf_token %}
+                  <button class="btn btn-primary btn-sm" type="submit">Accept</button>
+                </form>
+                <form method="post" action="{% url 'planner:instructor_booking_action' b.pk 'reject' %}">
+                  {% csrf_token %}
+                  <button class="btn btn-danger btn-sm" type="submit">Reject</button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          {% include "components/empty_state.html" with title="No pending requests" message="New member booking requests will appear here for review." %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Appointments & Notifications -->
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem;">
+    <div class="card">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Upcoming Confirmed Appointments</span>
+        <a href="{% url 'planner:instructor_appointments' %}" class="btn btn-ghost btn-sm">View all</a>
+      </div>
+      <div class="card-body">
+        {% if upcoming_appointments %}
+          {% for b in upcoming_appointments %}
+            <div style="border-bottom:1px solid var(--border); padding:.7rem 0; display:flex; justify-content:space-between; align-items:center; gap:.75rem;">
+              <div>
+                <strong>{{ b.user.username }}</strong>
+                <div class="tabular-nums" style="font-size:.875rem; color:var(--text-muted);">{{ b.session_date|date:"M d, Y" }} &bull; {{ b.time_slot }}</div>
+              </div>
+              {% include "components/status_badge.html" with text="Confirmed" variant="success" %}
+            </div>
+          {% endfor %}
+        {% else %}
+          {% include "components/empty_state.html" with title="No upcoming sessions" message="Confirmed future appointments will appear here." %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Notifications (<span class="tabular-nums">{{ unread_count }}</span> unread)</span>
+        {% if unread_count %}
+          <form method="post" action="{% url 'planner:notifications_mark_read' %}" style="margin:0;">
+            {% csrf_token %}
+            <button class="btn btn-ghost btn-sm" type="submit">Mark all read</button>
+          </form>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        {% if notifications %}
+          {% for n in notifications %}
+            <div style="padding:.6rem 0; border-bottom:1px solid var(--border);">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;">
+                <strong>{{ n.title }}</strong>
+                {% if not n.is_read %}
+                  {% include "components/status_badge.html" with text="New" variant="info" %}
+                {% endif %}
+              </div>
+              <div style="font-size:.875rem; color:var(--text-muted); margin-top:.15rem;">{{ n.message }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          {% include "components/empty_state.html" with title="No notifications" message="Booking updates and member assignments will appear here." %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

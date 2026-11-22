@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in — FitLife{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+
+    <aside class="auth-hero">
+      <div>
+        <a class="fl-brand" href="/" style="color:#fff;">
+          <span class="fl-brand-mark" style="background:rgba(255,255,255,.2);">F</span>
+          FitLife
+        </a>
+        <h2 class="mt-4">Welcome back, athlete.</h2>
+        <p>Pick up where you left off. Your meals, workouts, and weekly schedule are waiting for you.</p>
+
+        <ul class="auth-features">
+          <li><span class="ic">&#9889;</span><span><strong>Stay consistent.</strong> Track your weekly streak and progress.</span></li>
+          <li><span class="ic">&#127869;</span><span><strong>Eat smart.</strong> Quick access to your saved meal plans.</span></li>
+          <li><span class="ic">&#127947;</span><span><strong>Train hard.</strong> Jump straight into today's workout.</span></li>
+        </ul>
+      </div>
+      <p class="auth-hero-footer">"Discipline today, freedom tomorrow."</p>
+    </aside>
+
+    <section class="auth-form">
+      <div class="auth-form-header">
+        <h3>Sign in to your account</h3>
+        <p>Enter your credentials below.</p>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-error">{{ form.non_field_errors|striptags }}</div>
+        {% endif %}
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}<div class="errorlist">{{ form.username.errors|striptags }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+          {{ form.password }}
+          {% if form.password.errors %}<div class="errorlist">{{ form.password.errors|striptags }}</div>{% endif %}
+        </div>
+
+        <button class="btn btn-primary btn-lg btn-block mt-2" type="submit">Sign in</button>
+      </form>
+
+      <p class="auth-divider">
+        New to FitLife? <a href="{% url 'register' %}">Create an account</a>
+      </p>
+    </section>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "planner/base_admin.html" %}
+
+{% block title %}Admin Overview — FitLife{% endblock %}
+
+{% block admin_content %}
+  {% include "components/page_header.html" with title="Admin Overview" subtitle="System metrics, pending payment reviews, and coaching activity across FitLife." %}
+
+  <!-- Overview Metrics -->
+  <div class="metric-grid">
+    {% include "components/metric_card.html" with label="Total Accounts" value=total_users meta="Members & staff profiles" %}
+    {% include "components/metric_card.html" with label="Instructors" value=instructors_count meta="Coaching roster" %}
+    {% include "components/metric_card.html" with label="Pending Payments" value=pending_memberships_count meta="Awaiting admin approval" %}
+    {% include "components/metric_card.html" with label="Active Assignments" value=assignments_count meta="Member-to-coach links" %}
+    {% include "components/metric_card.html" with label="Average BMI" value=avg_bmi|default:"—" meta="Across profiled users" %}
+  </div>
+
+  <!-- Action Shortcuts -->
+  <div class="card mb-3">
+    <div class="card-header">Quick Management Shortcuts</div>
+    <div class="card-body" style="display:flex; flex-wrap:wrap; gap:.75rem;">
+      <a href="{% url 'planner:admin_instructor_new' %}" class="btn btn-primary btn-sm">
+        {% include "components/icon.html" with name="user-plus" %} Add New Instructor
+      </a>
+      <a href="{% url 'planner:admin_memberships' %}" class="btn btn-outline btn-sm">
+        {% include "components/icon.html" with name="credit-card" %} Review Payments ({{ pending_memberships_count }})
+      </a>
+      <a href="{% url 'planner:admin_assignments' %}" class="btn btn-outline btn-sm">
+        {% include "components/icon.html" with name="link" %} Assign Members ({{ assignments_count }})
+      </a>
+      <a href="{% url 'planner:admin_users' %}" class="btn btn-outline btn-sm">
+        {% include "components/icon.html" with name="users" %} User Directory ({{ total_users }})
+      </a>
+      <a href="{% url 'planner:admin_analytics' %}" class="btn btn-outline btn-sm">
+        {% include "components/icon.html" with name="chart" %} Full Analytics
+      </a>
+    </div>
+  </div>
+
+  <!-- Analytics Snapshot -->
+  <div class="breakdown-grid">
+    <div class="breakdown-card">
+      <div class="breakdown-card-header">
+        {% include "components/icon.html" with name="chart" %} Fitness Goal Distribution
+      </div>
+      {% for label, count in goal_counts.items %}
+        <div class="breakdown-item">
+          <div class="breakdown-label">{{ label }}</div>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar-bg">
+              <div class="breakdown-bar-fill" style="width: {% if total_users > 0 %}{% widthratio count total_users 100 %}{% else %}0{% endif %}%;"></div>
+            </div>
+          </div>
+          <div class="breakdown-count">{{ count }}</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="breakdown-card">
+      <div class="breakdown-card-header">
+        {% include "components/icon.html" with name="trending-up" %} BMI Category Snapshot
+      </div>
+      {% for label, count in bmi_counts.items %}
+        <div class="breakdown-item">
+          <div class="breakdown-label">{{ label }}</div>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar-bg">
+              <div class="breakdown-bar-fill" style="width: {% if total_users > 0 %}{% widthratio count total_users 100 %}{% else %}0{% endif %}%;"></div>
+            </div>
+          </div>
+          <div class="breakdown-count">{{ count }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Activity: Pending Payments & Recent Appointments -->
+  <div class="breakdown-grid">
+    <div class="dir-card">
+      <div class="dir-card-header">
+        <span>Pending Payment Requests</span>
+        <a href="{% url 'planner:admin_memberships' %}" class="btn btn-ghost btn-sm">View all</a>
+      </div>
+      <div class="table-wrap">
+        {% if pending_memberships %}
+        <table class="fl-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Plan</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in pending_memberships|slice:":5" %}
+            <tr>
+              <td><strong>{{ m.user.username }}</strong></td>
+              <td>{{ m.package.name }}</td>
+              <td class="tabular-nums"><strong>{{ m.amount_display }}</strong></td>
+              <td>
+                <div class="inst-actions">
+                  <form method="post" action="{% url 'planner:admin_membership_approve' m.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+                  </form>
+                  <form method="post" action="{% url 'planner:admin_membership_reject' m.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <div style="padding:1.5rem;">
+            {% include "components/empty_state.html" with title="No pending payments" message="All paid membership requests have been reviewed." %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="dir-card">
+      <div class="dir-card-header">
+        <span>Recent Coaching Appointments</span>
+        <a href="{% url 'planner:admin_instructors' %}" class="btn btn-ghost btn-sm">Instructors</a>
+      </div>
+      <div class="table-wrap">
+        {% if all_bookings %}
+        <table class="fl-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Instructor</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in all_bookings|slice:":5" %}
+            <tr>
+              <td><strong>{{ b.user.username }}</strong></td>
+              <td>{{ b.instructor.name }}</td>
+              <td class="tabular-nums" style="white-space:nowrap;">{{ b.session_date|date:"M d, Y" }}</td>
+              <td>
+                {% if b.status == 'confirmed' or b.status == 'completed' %}
+                  {% include "components/status_badge.html" with text=b.get_status_display variant="success" %}
+                {% elif b.status == 'pending' or b.status == 'reschedule_requested' %}
+                  {% include "components/status_badge.html" with text=b.get_status_display variant="warning" %}
+                {% else %}
+                  {% include "components/status_badge.html" with text=b.get_status_display variant="danger" %}
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <div style="padding:1.5rem;">
+            {% include "components/empty_state.html" with title="No appointments yet" message="Coaching booking activity will appear here." %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

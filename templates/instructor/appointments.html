@@ -1,0 +1,91 @@
+{% extends "instructor/base_instructor.html" %}
+
+{% block title %}Appointments — FitLife Instructor{% endblock %}
+
+{% block inst_content %}
+  {% include "components/page_header.html" with title="Appointments" subtitle="Review booking requests, suggest reschedules, and mark completed sessions." parent_label="Dashboard" parent_url="/instructor/" %}
+
+  <div class="card">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.75rem;">
+      <span>Coaching Bookings (<span class="tabular-nums">{{ bookings|length }}</span>)</span>
+      <form method="get" style="display:flex; gap:.5rem;">
+        <select name="status" class="form-control" aria-label="Filter appointments by status" onchange="this.form.submit()">
+          <option value="">All Statuses</option>
+          {% for code, label in status_choices %}
+            <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+    <div class="table-wrap">
+      {% if bookings %}
+        <table class="fl-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Date &amp; Time</th>
+              <th>Focus</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in bookings %}
+              <tr>
+                <td><strong>{{ b.user.username }}</strong></td>
+                <td class="tabular-nums" style="white-space:nowrap;">{{ b.session_date|date:"M d, Y" }} &bull; {{ b.time_slot }}</td>
+                <td>{{ b.focus_area|default:"General Coaching" }}</td>
+                <td>
+                  {% if b.status == 'confirmed' or b.status == 'completed' %}
+                    {% include "components/status_badge.html" with text=b.get_status_display variant="success" %}
+                  {% elif b.status == 'pending' or b.status == 'reschedule_requested' %}
+                    {% include "components/status_badge.html" with text=b.get_status_display variant="warning" %}
+                  {% else %}
+                    {% include "components/status_badge.html" with text=b.get_status_display variant="danger" %}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if b.status == 'pending' %}
+                    <div style="display:flex; gap:.4rem; flex-wrap:wrap; align-items:center;">
+                      <form method="post" action="{% url 'planner:instructor_booking_action' b.pk 'accept' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-sm">Accept</button>
+                      </form>
+                      <form method="post" action="{% url 'planner:instructor_booking_action' b.pk 'reject' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                      </form>
+                      <form method="post" action="{% url 'planner:instructor_booking_action' b.pk 'reschedule' %}" style="display:flex; gap:.35rem; flex-wrap:wrap;">
+                        {% csrf_token %}
+                        <input type="date" name="suggested_date" class="form-control" aria-label="Suggested date" style="padding:.35rem .5rem; font-size:.8125rem; width:auto;">
+                        <input type="text" name="suggested_time_slot" placeholder="New slot" aria-label="Suggested time slot" class="form-control" style="padding:.35rem .5rem; font-size:.8125rem; width:130px;">
+                        <button type="submit" class="btn btn-outline btn-sm">Reschedule</button>
+                      </form>
+                    </div>
+                  {% elif b.status == 'confirmed' %}
+                    <div style="display:flex; gap:.4rem; flex-wrap:nowrap;">
+                      <form method="post" action="{% url 'planner:instructor_booking_action' b.pk 'complete' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-sm">Mark Completed</button>
+                      </form>
+                      <form method="post" action="{% url 'planner:instructor_booking_action' b.pk 'no_show' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline btn-sm">No Show</button>
+                      </form>
+                    </div>
+                  {% else %}
+                    <span style="color:var(--text-muted);">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div style="padding:2rem;">
+          {% include "components/empty_state.html" with title="No appointments found" message="Member coaching requests and confirmed sessions will appear here." %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

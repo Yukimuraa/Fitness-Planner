@@ -1,0 +1,92 @@
+{% extends "planner/base_admin.html" %}
+
+{% block title %}Manage Instructors — FitLife Admin{% endblock %}
+
+{% block admin_content %}
+  {% include "components/page_header.html" with title="Manage Instructors" subtitle="Edit instructor profiles, toggle account status, or remove coaches." parent_label="Overview" parent_url="/admin-dashboard/" action_label="Add Instructor" action_url="/admin-dashboard/instructors/new/" %}
+
+  <div class="dir-card">
+    <div class="dir-card-header" style="flex-wrap:wrap; gap:.75rem;">
+      <span>Instructors (<span class="tabular-nums">{{ instructors|length }}</span>)</span>
+      <input type="search" id="instSearch" class="form-control" placeholder="Search name, specialty, or username..." aria-label="Search instructors" style="max-width:280px;">
+    </div>
+    <div class="table-wrap">
+      {% if instructors %}
+      <table class="fl-table" id="instTable">
+        <thead>
+          <tr>
+            <th>Instructor</th>
+            <th>Login</th>
+            <th>Specialty</th>
+            <th>Experience</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inst in instructors %}
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:.65rem;">
+                {% if inst.profile_photo %}
+                  <img src="{{ inst.profile_photo.url }}" alt="{{ inst.name }}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+                {% else %}
+                  <span class="user-avatar" style="margin-right:0;">{{ inst.name|slice:":1"|upper }}</span>
+                {% endif %}
+                <div>
+                  <strong>{{ inst.name }}</strong>
+                  <div style="font-size:.8125rem; color:var(--text-muted);">{{ inst.email|default:inst.available_days }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ inst.user.username|default:"—" }}</td>
+            <td>{{ inst.specialty }}</td>
+            <td class="tabular-nums">{{ inst.experience_years }} yrs</td>
+            <td>
+              {% if inst.status == 'active' %}
+                {% include "components/status_badge.html" with text="Active" variant="success" %}
+              {% elif inst.status == 'suspended' %}
+                {% include "components/status_badge.html" with text="Suspended" variant="warning" %}
+              {% else %}
+                {% include "components/status_badge.html" with text="Inactive" variant="danger" %}
+              {% endif %}
+            </td>
+            <td>
+              <div class="inst-actions">
+                <a href="{% url 'planner:admin_instructor_edit' inst.pk %}" class="btn btn-outline btn-sm">Edit</a>
+                <form method="post" action="{% url 'planner:admin_instructor_toggle' inst.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline btn-sm">
+                    {% if inst.status == 'active' %}Disable{% else %}Enable{% endif %}
+                  </button>
+                </form>
+                <form method="post" action="{% url 'planner:admin_instructor_delete' inst.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div style="padding:2rem;">
+          {% include "components/empty_state.html" with title="No instructors yet" message="Create your first instructor account to enable coaching bookings." cta_label="Add Instructor" cta_url="/admin-dashboard/instructors/new/" %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    const instSearch = document.getElementById('instSearch');
+    if (instSearch) {
+      instSearch.addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#instTable tbody tr').forEach(row => {
+          row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+      });
+    }
+  </script>
+{% endblock %}

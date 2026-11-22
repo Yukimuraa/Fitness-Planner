@@ -1,0 +1,116 @@
+{% extends "planner/base_admin.html" %}
+
+{% block title %}Membership Requests — FitLife Admin{% endblock %}
+
+{% block admin_content %}
+  {% include "components/page_header.html" with title="Membership & Payment Requests" subtitle="Review paid membership requests in Philippine Peso (₱) and approve or reject them." parent_label="Overview" parent_url="/admin-dashboard/" %}
+
+  <div class="metric-grid">
+    {% include "components/metric_card.html" with label="Pending Requests" value=pending_memberships|length meta="Awaiting payment review" %}
+    {% include "components/metric_card.html" with label="Total Transactions" value=all_memberships|length meta="Recent membership records" %}
+  </div>
+
+  <div class="dir-card">
+    <div class="dir-card-header" style="flex-wrap:wrap; gap:.75rem;">
+      <span>Membership Transactions</span>
+      <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        <select id="memStatusFilter" class="form-control" aria-label="Filter by status" style="max-width:180px;">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="active">Active</option>
+          <option value="rejected">Rejected</option>
+          <option value="expired">Expired</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <input type="search" id="memSearch" class="form-control" placeholder="Search member or ref..." aria-label="Search memberships" style="max-width:220px;">
+      </div>
+    </div>
+    <div class="table-wrap">
+      {% if all_memberships %}
+      <table class="fl-table" id="memTable">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Package</th>
+            <th>Amount</th>
+            <th>Reference</th>
+            <th>Dates</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in all_memberships %}
+          <tr data-status="{{ m.status }}">
+            <td><strong>{{ m.user.username }}</strong></td>
+            <td>{{ m.package.name }}</td>
+            <td class="tabular-nums"><strong>{{ m.amount_display }}</strong></td>
+            <td style="color:var(--text-muted);">{{ m.payment_reference|default:"—" }}</td>
+            <td class="tabular-nums" style="white-space:nowrap;">{{ m.start_date|date:"M d, Y" }} &rarr; {{ m.end_date|date:"M d, Y" }}</td>
+            <td>
+              {% if m.payment_status == 'approved' %}
+                {% include "components/status_badge.html" with text=m.get_payment_status_display variant="success" %}
+              {% elif m.payment_status == 'pending' %}
+                {% include "components/status_badge.html" with text=m.get_payment_status_display variant="warning" %}
+              {% elif m.payment_status == 'rejected' %}
+                {% include "components/status_badge.html" with text=m.get_payment_status_display variant="danger" %}
+              {% else %}
+                {% include "components/status_badge.html" with text=m.get_payment_status_display variant="info" %}
+              {% endif %}
+            </td>
+            <td>
+              {% if m.status == 'active' %}
+                {% include "components/status_badge.html" with text=m.get_status_display variant="success" %}
+              {% elif m.status == 'pending' %}
+                {% include "components/status_badge.html" with text=m.get_status_display variant="warning" %}
+              {% elif m.status == 'rejected' or m.status == 'cancelled' %}
+                {% include "components/status_badge.html" with text=m.get_status_display variant="danger" %}
+              {% else %}
+                {% include "components/status_badge.html" with text=m.get_status_display variant="info" %}
+              {% endif %}
+            </td>
+            <td>
+              {% if m.status == 'pending' %}
+                <div class="inst-actions">
+                  <form method="post" action="{% url 'planner:admin_membership_approve' m.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+                  </form>
+                  <form method="post" action="{% url 'planner:admin_membership_reject' m.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                  </form>
+                </div>
+              {% else %}
+                <span style="color:var(--text-muted);">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div style="padding:2rem;">
+          {% include "components/empty_state.html" with title="No membership requests yet" message="Member subscription requests will appear here for review." %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    function filterMemberships() {
+      const status = document.getElementById('memStatusFilter').value;
+      const q = document.getElementById('memSearch').value.toLowerCase();
+      document.querySelectorAll('#memTable tbody tr').forEach(row => {
+        const matchStatus = !status || row.dataset.status === status;
+        const matchText = row.textContent.toLowerCase().includes(q);
+        row.style.display = (matchStatus && matchText) ? '' : 'none';
+      });
+    }
+    const sf = document.getElementById('memStatusFilter');
+    const ms = document.getElementById('memSearch');
+    if (sf) sf.addEventListener('change', filterMemberships);
+    if (ms) ms.addEventListener('input', filterMemberships);
+  </script>
+{% endblock %}

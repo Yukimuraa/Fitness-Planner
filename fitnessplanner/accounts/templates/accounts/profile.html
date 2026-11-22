@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+
+
+{% block title %}{{ user.username }} — Profile{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container-narrow">
+
+
+
+  <div class="page-header">
+
+    <div>
+
+      <h1 class="page-title">{{ user.username }}</h1>
+
+      <p class="page-subtitle">Personal info, fitness profile &amp; progress.</p>
+
+    </div>
+
+    <div class="flex">
+
+      <a class="btn btn-outline" href="{% url 'accounts:progress' %}">Track progress</a>
+
+      <a class="btn btn-primary" href="{% url 'accounts:edit_profile' %}">Edit profile</a>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="stat-grid">
+
+    <div class="stat-card">
+
+      <div class="ic">&#128200;</div>
+
+      <div class="label">Height</div>
+
+      <div class="value">{{ profile.height_cm|default:"—" }}<span style="font-size:1rem;color:var(--text-muted);"> cm</span></div>
+
+    </div>
+
+    <div class="stat-card accent">
+
+      <div class="ic">&#9878;</div>
+
+      <div class="label">Weight</div>
+
+      <div class="value">{{ profile.weight_kg|default:"—" }}<span style="font-size:1rem;color:var(--text-muted);"> kg</span></div>
+
+    </div>
+
+    <div class="stat-card cool">
+
+      <div class="ic">&#128202;</div>
+
+      <div class="label">BMI</div>
+
+      <div class="value">{{ profile.bmi|default:"—" }}</div>
+
+      <div class="meta">based on your height &amp; weight</div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="card mt-2">
+
+    <div class="card-header">Fitness profile</div>
+
+    <div class="card-body">
+
+      <p><strong>Age:</strong> {{ profile.age|default:"—" }}</p>
+
+      <p><strong>Gender:</strong> {{ profile.get_gender_display|default:"—" }}</p>
+
+      <p><strong>Fitness goal:</strong> {{ profile.get_fitness_goal_display|default:"—" }}</p>
+
+      <p><strong>Activity level:</strong> {{ profile.get_activity_level_display|default:"—" }}</p>
+
+    </div>
+
+  </div>
+
+  <div class="card mt-2">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>Allergy &amp; Dietary Assessment</span>
+      <a href="{% url 'accounts:allergy_assessment' %}?from=profile" class="btn btn-outline btn-sm">Update</a>
+    </div>
+    <div class="card-body">
+      <p>
+        <strong>Food Allergies:</strong>
+        {% if profile.user.dietary_profile.no_known_allergies %}
+          No known food allergies
+        {% elif profile.user.member_allergies.all %}
+          {% for ma in profile.user.member_allergies.all %}
+            <span class="badge badge-danger">{{ ma.label }}</span>
+          {% endfor %}
+        {% else %}
+          {{ profile.get_allergies_display_list|join:", "|default:"None listed" }}
+        {% endif %}
+      </p>
+      <p>
+        <strong>Food Intolerances:</strong>
+        {% if profile.user.dietary_profile.no_known_intolerances %}
+          None / Not sure
+        {% elif profile.user.member_intolerances.all %}
+          {% for mi in profile.user.member_intolerances.all %}
+            <span class="badge badge-warning">{{ mi.label }}</span>
+          {% endfor %}
+        {% else %}
+          None listed
+        {% endif %}
+      </p>
+      <p style="margin-bottom:0;">
+        <strong>Dietary Preferences:</strong>
+        {% if profile.user.dietary_profile.dietary_preferences.all %}
+          {% for dp in profile.user.dietary_profile.dietary_preferences.all %}
+            <span class="badge badge-info">{{ dp.name }}</span>
+          {% endfor %}
+        {% else %}
+          {{ profile.get_dietary_preference_display|default:"No specific preference" }}
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+
+
+  <div class="card mt-2">
+
+    <div class="card-header">About me</div>
+
+    <div class="card-body">
+
+      <p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
+
+      <p><strong>Bio:</strong> {{ profile.bio|default:"You haven't added a bio yet." }}</p>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="card mt-2">
+
+    <div class="card-header">
+
+      Recent progress
+
+      <a class="btn btn-ghost btn-sm" href="{% url 'accounts:progress' %}">View all</a>
+
+    </div>
+
+    <div class="card-body">
+
+      {% if recent_progress %}
+
+        <ul class="item-list">
+
+          {% for e in recent_progress %}
+
+            <li>
+
+              <div>
+
+                <div class="name">{{ e.recorded_at|date:"M j, Y" }}</div>
+
+                <div class="desc">
+
+                  {% if e.weight_kg %}{{ e.weight_kg }} kg{% else %}—{% endif %}
+
+                  {% if e.notes %} &middot; {{ e.notes }}{% endif %}
+
+                </div>
+
+              </div>
+
+            </li>
+
+          {% endfor %}
+
+        </ul>
+
+      {% else %}
+
+        <p class="text-muted">No progress logged yet. <a href="{% url 'accounts:progress' %}">Log your first entry</a>.</p>
+
+      {% endif %}
+
+    </div>
+
+  </div>
+
+
+
+</div>
+
+{% endblock %}
+

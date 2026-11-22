@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Workouts — FitLife{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Workout library</h1>
+      <p class="page-subtitle">Reusable workout templates you can schedule any day.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'planner:workout_create' %}">+ New workout</a>
+  </div>
+
+  {% if workouts %}
+    <div class="grid">
+      {% for w in workouts %}
+        <div class="grid-card">
+          <h4 class="title">{{ w.name }}</h4>
+          <p class="desc">{{ w.description|default:"No description yet." }}</p>
+          <div class="meta">
+            <span>Duration</span>
+            <span class="badge badge-accent">{{ w.duration_min }} min</span>
+          </div>
+          <div class="actions">
+            <a class="btn btn-outline btn-sm" href="{% url 'planner:workout_edit' w.pk %}">Edit</a>
+            <a class="btn btn-danger btn-sm" href="{% url 'planner:workout_delete' w.pk %}">Delete</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h4>No workouts yet</h4>
+      <p>Create your first workout template — strength, cardio, yoga, anything.</p>
+      <a class="btn btn-primary" href="{% url 'planner:workout_create' %}">+ Add your first workout</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

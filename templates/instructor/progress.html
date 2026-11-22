@@ -1,0 +1,121 @@
+{% extends "instructor/base_instructor.html" %}
+
+{% block title %}Progress Tracking — FitLife Instructor{% endblock %}
+
+{% block inst_content %}
+  {% include "components/page_header.html" with title="Member Progress Tracking" subtitle="Monitor assigned members' weight logs, completed workouts, and coaching feedback." parent_label="Dashboard" parent_url="/instructor/" %}
+
+  {% if assigned_members %}
+    <div class="card mb-3">
+      <div class="card-body" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <strong>Select Assigned Member</strong>
+        <form method="get" style="margin:0;">
+          <select name="member_id" class="form-control" aria-label="Select assigned member" onchange="this.form.submit()" style="min-width:220px;">
+            {% for m in assigned_members %}
+              <option value="{{ m.id }}" {% if selected_member and selected_member.id == m.id %}selected{% endif %}>{{ m.username }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if selected_member %}
+    <div class="metric-grid">
+      {% include "components/metric_card.html" with label="Selected Member" value=selected_member.username meta="Active assignment" %}
+      {% include "components/metric_card.html" with label="Weight Logs" value=progress_entries|length meta="Recorded entries" %}
+      {% include "components/metric_card.html" with label="Completed Workouts" value=completed_workouts|length meta="Logged sessions" %}
+      {% include "components/metric_card.html" with label="Assessments" value=assessments|length meta="Body screenings" %}
+    </div>
+
+    <!-- Lightweight SVG Weight Trend Chart (real recorded entries only) -->
+    <div class="card mb-3">
+      <div class="card-header">Weight Trend ({{ selected_member.username }})</div>
+      <div class="card-body">
+        {% if progress_entries|length >= 2 %}
+          <div id="weightChartWrap" style="width:100%; overflow-x:auto;">
+            <svg id="weightTrendSvg" viewBox="0 0 600 180" style="width:100%; max-height:200px; display:block;" role="img" aria-label="Member weight trend chart"></svg>
+          </div>
+          <script>
+            (function () {
+              const pts = [
+                {% for p in progress_entries reversed %}
+                  {% if p.weight_kg %}{ date: "{{ p.recorded_at|date:'M d' }}", w: {{ p.weight_kg }} },{% endif %}
+                {% endfor %}
+              ];
+              const svg = document.getElementById('weightTrendSvg');
+              if (!svg || pts.length < 2) return;
+              const minW = Math.min(...pts.map(p => p.w)) - 1;
+              const maxW = Math.max(...pts.map(p => p.w)) + 1;
+              const span = (maxW - minW) || 1;
+              const coords = pts.map((p, i) => {
+                const x = 40 + (i * (520 / (pts.length - 1)));
+                const y = 145 - (((p.w - minW) / span) * 110);
+                return { x, y, ...p };
+              });
+              const poly = coords.map(c => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ');
+              let html = `<line x1="40" y1="145" x2="560" y2="145" stroke="#E2E8F0" stroke-width="1"/>`;
+              html += `<polyline fill="none" stroke="#16A34A" stroke-width="2.5" points="${poly}"/>`;
+              coords.forEach(c => {
+                html += `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="4" fill="#16A34A"/>`;
+                html += `<text x="${c.x.toFixed(1)}" y="${(c.y - 10).toFixed(1)}" text-anchor="middle" font-size="11" fill="#0F172A">${c.w}kg</text>`;
+                html += `<text x="${c.x.toFixed(1)}" y="165" text-anchor="middle" font-size="11" fill="#64748B">${c.date}</text>`;
+              });
+              svg.innerHTML = html;
+            })();
+          </script>
+        {% else %}
+          {% include "components/empty_state.html" with title="Insufficient weight history for trend chart" message="At least 2 recorded weight entries are needed to plot a trend line." %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem;">
+      <div class="card">
+        <div class="card-header">Weight Logs</div>
+        <div class="card-body">
+          {% for p in progress_entries %}
+            <div style="padding:.55rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+              <span class="tabular-nums">{{ p.recorded_at|date:"M d, Y" }}</span>
+              <strong class="tabular-nums">{{ p.weight_kg|default:"—" }} kg</strong>
+            </div>
+          {% empty %}
+            {% include "components/empty_state.html" with title="No weight logs" message="Member weight logs will appear here." %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Completed Workouts</div>
+        <div class="card-body">
+          {% for w in completed_workouts %}
+            <div style="padding:.55rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+              <span>{{ w.workout.name }}</span>
+              <span class="tabular-nums" style="font-size:.875rem; color:var(--text-muted);">{{ w.date|date:"M d, Y" }}</span>
+            </div>
+          {% empty %}
+            {% include "components/empty_state.html" with title="No completed workouts" message="Completed scheduled workouts will appear here." %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card card-form">
+        <div class="card-header">Record Coaching Feedback</div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            {% for field in note_form %}
+              <div class="form-group">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+              </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-sm">Save Feedback</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    {% include "components/empty_state.html" with title="No assigned members" message="Once an Admin assigns members to you, their progress will appear here." %}
+  {% endif %}
+{% endblock %}

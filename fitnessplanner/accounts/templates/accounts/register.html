@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Create your account — FitLife{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card auth-card-register">
+
+    <!-- Left Brand & Features Showcase -->
+    <aside class="auth-hero">
+      <div>
+        <a class="fl-brand" href="/" style="color:#fff;">
+          <span class="fl-brand-mark" style="background:rgba(255,255,255,.2);">F</span>
+          FitLife
+        </a>
+        <h2 class="mt-4">Start your fitness journey today.</h2>
+        <p>Tell us about your body and goals so we can calculate your personalized calories and customize your planner from day one.</p>
+
+        <div class="auth-hero-pills">
+          <div class="auth-hero-badge">
+            <span class="auth-hero-badge-icon">🥗</span>
+            <div class="auth-hero-badge-text">
+              <strong>Smart Meal Planning</strong>
+              <span>Personalized daily calories and macro targets calculated for you.</span>
+            </div>
+          </div>
+          <div class="auth-hero-badge">
+            <span class="auth-hero-badge-icon">💪</span>
+            <div class="auth-hero-badge-text">
+              <strong>Targeted Workouts</strong>
+              <span>Custom exercise splits tuned to your muscle and fitness goals.</span>
+            </div>
+          </div>
+          <div class="auth-hero-badge">
+            <span class="auth-hero-badge-icon">📊</span>
+            <div class="auth-hero-badge-text">
+              <strong>Visual Progress Tracking</strong>
+              <span>Log weekly weigh-ins and watch your body metrics improve.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <p class="auth-hero-footer" style="margin-top:1.5rem; display:flex; align-items:center; gap:.5rem;">
+        <span>⭐ 4.9/5 Rating</span>
+        <span>•</span>
+        <span>Trusted by 10,000+ active members</span>
+      </p>
+    </aside>
+
+    <!-- Right Registration Form -->
+    <section class="auth-form auth-form-scroll">
+      <div class="auth-form-header">
+        <h3>Create your account</h3>
+        <p>Complete your credentials and fitness metrics in 2 quick steps.</p>
+      </div>
+
+      <!-- Step Indicator Bar -->
+      <nav class="reg-stepper" aria-label="Registration steps" id="regStepper">
+        <button type="button" class="reg-step-tab active" id="tabStep1" onclick="switchStep(1)">
+          <span class="reg-step-badge-num" id="badgeNum1">1</span>
+          <span>Account</span>
+        </button>
+        <button type="button" class="reg-step-tab" id="tabStep2" onclick="switchStep(2)">
+          <span class="reg-step-badge-num" id="badgeNum2">2</span>
+          <span>Fitness Profile</span>
+        </button>
+      </nav>
+
+      <!-- Progress Track -->
+      <div class="reg-progress-wrap">
+        <div class="reg-progress-bar" id="regProgressBar" style="width: 50%;"></div>
+      </div>
+
+      <form method="post" id="registerForm" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-error">{{ form.non_field_errors|striptags }}</div>
+        {% endif %}
+
+        <!-- STEP 1: Account Credentials -->
+        <div class="reg-step-pane active" id="paneStep1">
+          <div class="reg-section-header">
+            <div class="reg-section-tag">
+              <span class="reg-section-tag-dot"></span>
+              <span>Step 1 of 2</span>
+            </div>
+            <h4 class="reg-section-title">Account Credentials</h4>
+            <p class="reg-section-desc">Create your login credentials to access your FitLife planner.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="{{ form.username.id_for_label }}">
+              Username <span style="color:var(--danger)">*</span>
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="errorlist">{{ form.username.errors|striptags }}</div>{% endif %}
+            {% if form.username.help_text %}
+              <small class="form-text" style="color:var(--text-muted); font-size:.78rem;">150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="{{ form.email.id_for_label }}">
+              Email address <span style="color:var(--danger)">*</span>
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="errorlist">{{ form.email.errors|striptags }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="{{ form.password1.id_for_label }}">
+              Password <span style="color:var(--danger)">*</span>
+            </label>
+            <div class="reg-input-wrap">
+              {{ form.password1 }}
+              <button type="button" class="reg-pw-toggle" onclick="togglePasswordVisibility('{{ form.password1.id_for_label }}', this)" title="Toggle password visibility" aria-label="Toggle password visibility">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+            {% if form.password1.errors %}<div class="errorlist">{{ form.password1.errors|striptags }}</div>{% endif %}
+            <div class="reg-pw-tips">
+              <strong>Password tips:</strong> Must be at least 8 characters, not entirely numeric, and not commonly used.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="{{ form.password2.id_for_label }}">
+              Confirm password <span style="color:var(--danger)">*</span>
+            </label>
+            <div class="reg-input-wrap">
+              {{ form.password2 }}
+              <button type="button" class="reg-pw-toggle" onclick="togglePasswordVisibility('{{ form.password2.id_for_label }}', this)" title="Toggle password visibility" aria-label="Toggle password visibility">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+            {% if form.password2.errors %}<div class="errorlist">{{ form.password2.errors|striptags }}</div>{% endif %}
+          </div>
+
+          <div class="reg-step-actions">
+            <button class="btn btn-primary btn-lg btn-next" type="button" id="btnNextToStep2" onclick="validateAndGoToStep2()">
+              Next: Fitness Profile &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: Fitness Profile -->
+        <div class="reg-step-pane" id="paneStep2">
+          <div class="reg-section-header">
+            <div class="reg-section-tag" style="background: rgba(249, 115, 22, .12); color: var(--accent-dark);">
+              <span class="reg-section-tag-dot" style="background: var(--accent);"></span>
+              <span>Step 2 of 2</span>
+            </div>
+            <h4 class="reg-section-title">Body &amp; Fitness Profile</h4>
+            <p class="reg-section-desc">We use these physical stats to calculate your BMR, TDEE, and optimal meal targets.</p>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.height_cm.id_for_label }}">
+                Height (cm) <span style="color:var(--danger)">*</span>
+              </label>
+              {{ form.height_cm }}
+              {% if form.height_cm.errors %}<div class="errorlist">{{ form.height_cm.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="{{ form.weight_kg.id_for_label }}">
+                Weight (kg) <span style="color:var(--danger)">*</span>
+              </label>
+              {{ form.weight_kg }}
+              {% if form.weight_kg.errors %}<div class="errorlist">{{ form.weight_kg.errors|striptags }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.age.id_for_label }}">
+                Age <span style="color:var(--danger)">*</span>
+              </label>
+              {{ form.age }}
+              {% if form.age.errors %}<div class="errorlist">{{ form.age.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="{{ form.gender.id_for_label }}">
+                Gender <span style="color:var(--danger)">*</span>
+              </label>
+              {{ form.gender }}
+              {% if form.gender.errors %}<div class="errorlist">{{ form.gender.errors|striptags }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="{{ form.activity_level.id_for_label }}">
+              Activity level <span style="color:var(--danger)">*</span>
+            </label>
+            {{ form.activity_level }}
+            {% if form.activity_level.errors %}<div class="errorlist">{{ form.activity_level.errors|striptags }}</div>{% endif %}
+          </div>
+
+          <div class="reg-step-actions">
+            <button class="btn btn-outline btn-lg btn-prev" type="button" onclick="switchStep(1)">
+              &larr; Back
+            </button>
+            <button class="btn btn-primary btn-lg btn-submit" type="submit">
+              Complete Registration &rarr;
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+      <!-- Toggle to show all fields at once if desired -->
+      <div class="reg-view-all-toggle">
+        <button type="button" id="toggleAllFieldsBtn" onclick="toggleAllFields()">
+          Show all fields on one page
+        </button>
+      </div>
+
+      <p class="auth-divider">
+        Already have an account? <a href="{% url 'login' %}">Sign in</a>
+      </p>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  let currentStep = 1;
+  let isAllFieldsView = false;
+
+  function switchStep(step) {
+    if (isAllFieldsView) {
+      toggleAllFields(); // turn off all fields mode first
+    }
+    currentStep = step;
+    const pane1 = document.getElementById('paneStep1');
+    const pane2 = document.getElementById('paneStep2');
+    const tab1 = document.getElementById('tabStep1');
+    const tab2 = document.getElementById('tabStep2');
+    const bar = document.getElementById('regProgressBar');
+
+    if (step === 1) {
+      pane1.classList.add('active');
+      pane2.classList.remove('active');
+      tab1.classList.add('active');
+      tab2.classList.remove('active');
+      bar.style.width = '50%';
+    } else {
+      pane1.classList.remove('active');
+      pane2.classList.add('active');
+      tab1.classList.remove('active');
+      tab1.classList.add('completed');
+      tab2.classList.add('active');
+      bar.style.width = '100%';
+    }
+
+    // Smooth scroll back to top of the form
+    const scrollContainer = document.querySelector('.auth-form-scroll');
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function validateAndGoToStep2() {
+    const username = document.getElementById('{{ form.username.id_for_label }}');
+    const email = document.getElementById('{{ form.email.id_for_label }}');
+    const p1 = document.getElementById('{{ form.password1.id_for_label }}');
+    const p2 = document.getElementById('{{ form.password2.id_for_label }}');
+
+    let hasMissing = false;
+    [username, email, p1, p2].forEach(input => {
+      if (input && !input.value.trim()) {
+        input.style.borderColor = 'var(--danger)';
+        hasMissing = true;
+      } else if (input) {
+        input.style.borderColor = '';
+      }
+    });
+
+    if (hasMissing) {
+      alert('Please fill in your username, email, and password to continue.');
+      return;
+    }
+
+    if (p1 && p2 && p1.value !== p2.value) {
+      p2.style.borderColor = 'var(--danger)';
+      alert('The two passwords do not match. Please re-enter them.');
+      return;
+    }
+
+    switchStep(2);
+  }
+
+  function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+    } else {
+      input.type = 'password';
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    }
+  }
+
+  function toggleAllFields() {
+    isAllFieldsView = !isAllFieldsView;
+    const pane1 = document.getElementById('paneStep1');
+    const pane2 = document.getElementById('paneStep2');
+    const stepper = document.getElementById('regStepper');
+    const progress = document.querySelector('.reg-progress-wrap');
+    const btnNext = document.getElementById('btnNextToStep2');
+    const btnPrev = document.querySelector('.btn-prev');
+    const toggleBtn = document.getElementById('toggleAllFieldsBtn');
+
+    if (isAllFieldsView) {
+      pane1.classList.add('active');
+      pane2.classList.add('active');
+      stepper.style.display = 'none';
+      progress.style.display = 'none';
+      if (btnNext) btnNext.parentElement.style.display = 'none';
+      if (btnPrev) btnPrev.style.display = 'none';
+      toggleBtn.textContent = 'Switch back to step-by-step view';
+    } else {
+      pane2.classList.remove('active');
+      stepper.style.display = 'flex';
+      progress.style.display = 'block';
+      if (btnNext) btnNext.parentElement.style.display = 'flex';
+      if (btnPrev) btnPrev.style.display = 'inline-block';
+      toggleBtn.textContent = 'Show all fields on one page';
+      switchStep(currentStep);
+    }
+  }
+
+  // Automatic Step routing if server returned validation errors
+  document.addEventListener('DOMContentLoaded', function() {
+    // Clear custom border color on input typing
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach(input => {
+      input.addEventListener('input', () => {
+        input.style.borderColor = '';
+      });
+    });
+
+    // Check if step 2 has errors from Django
+    const step2Errors = document.querySelectorAll('#paneStep2 .errorlist');
+    const step1Errors = document.querySelectorAll('#paneStep1 .errorlist');
+
+    if (step2Errors.length > 0 && step1Errors.length === 0) {
+      switchStep(2);
+    } else {
+      switchStep(1);
+    }
+  });
+</script>
+{% endblock %}

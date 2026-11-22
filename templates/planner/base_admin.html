@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+  .admin-wrapper { width: 100%; }
+  .admin-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem;
+  }
+  .admin-header h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -.02em; margin: 0 0 .25rem; }
+  .admin-header p { margin: 0; color: var(--text-muted); }
+  .admin-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border);
+    padding: .4rem .85rem; border-radius: 999px; font-size: .8125rem; font-weight: 700;
+  }
+
+  .admin-stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; margin-bottom: 1.75rem;
+  }
+  .admin-stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.35rem; display: flex; flex-direction: column; gap: .35rem;
+    box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+  }
+  .admin-stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--primary); }
+  .admin-stat-card.age::before,
+  .admin-stat-card.weight::before { background: var(--accent); }
+  .admin-stat-card.bmi-avg::before { background: #0F172A; }
+  .admin-stat-card .stat-icon { font-size: 1.35rem; color: var(--text-secondary); }
+  .admin-stat-card .stat-val { font-size: 1.85rem; font-weight: 800; letter-spacing: -.02em; color: var(--text); }
+  .admin-stat-card .stat-lbl { font-size: .8125rem; color: var(--text-muted); font-weight: 600; }
+
+  .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem; }
+  .breakdown-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .breakdown-card-header { padding: 1rem 1.35rem; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: .5rem; }
+  .breakdown-item { display: flex; align-items: center; gap: .9rem; padding: .8rem 1.35rem; border-bottom: 1px solid var(--border); }
+  .breakdown-item:last-child { border-bottom: none; }
+  .breakdown-label { flex: 1; font-size: .9375rem; font-weight: 500; }
+  .breakdown-bar-wrap { flex: 2; }
+  .breakdown-bar-bg { height: 8px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+  .breakdown-bar-fill { height: 100%; border-radius: 999px; background: var(--primary); }
+  .breakdown-count { font-weight: 700; font-size: .9375rem; min-width: 28px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+  .dir-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .dir-card-header { padding: 1.1rem 1.35rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 1rem; }
+
+  table.user-table, table.inst-table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+  table.inst-table { min-width: 560px; }
+  .user-table thead tr, .inst-table thead tr { background: var(--bg-soft); }
+  .user-table th, .inst-table th {
+    padding: .75rem 1rem; text-align: left; font-size: .8125rem; font-weight: 600;
+    color: var(--text-muted); white-space: nowrap; border-bottom: 1px solid var(--border);
+  }
+  .user-table td, .inst-table td { padding: .85rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .user-table tr:last-child td, .inst-table tr:last-child td { border-bottom: none; }
+  .user-avatar {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .875rem; font-weight: 700; color: #fff; flex-shrink: 0; margin-right: .6rem;
+  }
+  .user-name-cell { display: flex; align-items: center; }
+
+  .tbl-goal-pill, .bmi-cat-badge {
+    display: inline-block; padding: .25rem .65rem; border-radius: 999px;
+    font-size: .8125rem; font-weight: 600; white-space: nowrap;
+    background: var(--bg-soft); color: var(--text-secondary); border: 1px solid var(--border);
+  }
+  .tbl-goal-pill.lose_weight, .bmi-cat-badge.Normal { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+  .tbl-goal-pill.build_muscle, .bmi-cat-badge.Overweight { background: var(--warning-bg); color: var(--warning); border-color: var(--warning-border); }
+  .tbl-goal-pill.improve_fitness, .bmi-cat-badge.Underweight { background: var(--info-bg); color: var(--info); border-color: var(--info-border); }
+  .bmi-cat-badge.Obese { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-border); }
+
+  .inst-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+  .inst-actions { display: flex; gap: .4rem; flex-wrap: nowrap; white-space: nowrap; }
+
+  @media (max-width: 960px) { .breakdown-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) {
+    .admin-stats { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+    .inst-form-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 400px) { .admin-stats { grid-template-columns: 1fr; } }
+</style>
+{% block admin_extra_head %}{% endblock %}
+{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+  <div class="app-overlay" id="sidebarOverlay" onclick="toggleAdminSidebar()"></div>
+
+  <aside class="app-sidebar" id="adminSidebar" aria-label="Admin navigation">
+    <div class="app-sidebar-brand">
+      <div class="app-brand-mark">F</div>
+      <div class="app-brand-text">
+        <strong>FitLife Admin</strong>
+        <span>Management Portal</span>
+      </div>
+    </div>
+
+    <nav class="app-sidebar-nav">
+      <div class="app-sidebar-label">Dashboard</div>
+      <a href="{% url 'planner:admin_dashboard' %}" class="app-nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+        {% include "components/icon.html" with name="dashboard" %} Overview &amp; Stats
+      </a>
+      <a href="{% url 'planner:admin_analytics' %}" class="app-nav-link {% if request.resolver_match.url_name == 'admin_analytics' %}active{% endif %}">
+        {% include "components/icon.html" with name="chart" %} Goals &amp; BMI Analytics
+      </a>
+
+      <div class="app-sidebar-label">Management</div>
+      <a href="{% url 'planner:admin_users' %}" class="app-nav-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
+        {% include "components/icon.html" with name="users" %} User Directory
+      </a>
+      <a href="{% url 'planner:admin_memberships' %}" class="app-nav-link {% if request.resolver_match.url_name == 'admin_memberships' %}active{% endif %}">
+        {% include "components/icon.html" with name="credit-card" %} Membership Requests
+      </a>
+      <a href="{% url 'planner:admin_instructor_new' %}" class="app-nav-link {% if request.resolver_match.url_name == 'admin_instructor_new' %}active{% endif %}">
+        {% include "components/icon.html" with name="user-plus" %} Add Instructor
+      </a>
+      <a href="{% url 'planner:admin_instructors' %}" class="app-nav-link {% if request.resolver_match.url_name == 'admin_instructors' or request.resolver_match.url_name == 'admin_instructor_edit' %}active{% endif %}">
+        {% include "components/icon.html" with name="dumbbell" %} Manage Instructors
+      </a>
+      <a href="{% url 'planner:admin_assignments' %}" class="app-nav-link {% if request.resolver_match.url_name == 'admin_assignments' %}active{% endif %}">
+        {% include "components/icon.html" with name="link" %} Member Assignments
+      </a>
+
+      <div class="app-sidebar-label">System</div>
+      <a href="/admin/" class="app-nav-link">
+        {% include "components/icon.html" with name="settings" %} Django Admin Panel
+      </a>
+    </nav>
+
+    <div class="app-sidebar-footer">
+      <div class="app-sidebar-user">
+        <div class="app-user-avatar">{{ user.username|slice:":1"|upper }}</div>
+        <div class="app-user-meta">
+          <strong>{{ user.username }}</strong>
+          <small>Staff Admin</small>
+        </div>
+      </div>
+      <form action="{% url 'logout' %}" method="post" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost btn-sm" style="color:#CBD5E1;" aria-label="Logout">
+          {% include "components/icon.html" with name="logout" %}
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <div class="app-topbar-left">
+        <button type="button" class="app-menu-btn" onclick="toggleAdminSidebar()" aria-label="Open admin menu">
+          {% include "components/icon.html" with name="menu" %}
+        </button>
+        <span style="font-weight:700; font-size:.95rem; color:var(--text);">FitLife Admin</span>
+      </div>
+      <span class="badge badge-success">Staff Access</span>
+    </header>
+
+    <main id="main-content" class="app-content">
+      <div class="admin-wrapper">
+        {% if messages %}
+          <div class="mb-3">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% block admin_content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  function toggleAdminSidebar() {
+    document.getElementById('adminSidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+  }
+</script>
+{% endblock %}

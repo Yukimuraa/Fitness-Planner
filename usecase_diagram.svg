@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 1100" width="100%" height="100%" style="background-color: #0b0f19; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- White Arrow Marker -->
+    <marker id="arrow-white" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-angle">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#ffffff" />
+    </marker>
+    <!-- Dependency Open Arrow -->
+    <marker id="open-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto-angle">
+      <path d="M 2 2 L 10 6 L 2 10" fill="none" stroke="#94a3b8" stroke-width="2" />
+    </marker>
+
+    <!-- Drop Shadow Filter -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+
+    <!-- Actor Icon Gradients -->
+    <linearGradient id="actor-user" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="actor-admin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6b21a8"/>
+    </linearGradient>
+    <linearGradient id="actor-system" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Title Header -->
+  <g transform="translate(650, 45)" text-anchor="middle">
+    <text x="0" y="0" font-size="26" font-weight="800" fill="#ffffff" letter-spacing="-0.02em">USE CASE DIAGRAM — FITLIFE SYSTEM</text>
+    <text x="0" y="24" font-size="14" font-weight="500" fill="#94a3b8">Actors, System Boundary, Core Features, &amp; Automated Algorithmic Engines</text>
+  </g>
+
+  <!-- System Boundary Box -->
+  <g transform="translate(260, 95)">
+    <rect x="0" y="0" width="760" height="970" rx="14" fill="#111827" stroke="#374151" stroke-width="2" filter="url(#shadow)" />
+    <!-- System Boundary Title Banner -->
+    <rect x="20" y="16" width="300" height="28" rx="6" fill="#1f2937" stroke="#4b5563" stroke-width="1" />
+    <text x="170" y="35" font-size="13" font-weight="700" fill="#60a5fa" text-anchor="middle">System Boundary: FitLife Web Platform</text>
+  </g>
+
+
+  <!-- ========================================================= -->
+  <!-- USE CASE OVALS (INSIDE SYSTEM BOUNDARY)                   -->
+  <!-- ========================================================= -->
+
+  <!-- UC1: Register & Log In -->
+  <g id="uc-auth" transform="translate(390, 150)">
+    <ellipse cx="120" cy="24" rx="110" ry="24" fill="#1e293b" stroke="#ffffff" stroke-width="1.8" />
+    <text x="120" y="29" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Register &amp; Authenticate User</text>
+  </g>
+
+  <!-- UC2: Setup Profile & Biometrics -->
+  <g id="uc-profile" transform="translate(390, 220)">
+    <ellipse cx="120" cy="24" rx="110" ry="24" fill="#1e293b" stroke="#ffffff" stroke-width="1.8" />
+    <text x="120" y="29" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Setup Biometric Profile (H/W/Age)</text>
+  </g>
+
+  <!-- UC3: Select Goal & Muscle Focus -->
+  <g id="uc-goal" transform="translate(390, 290)">
+    <ellipse cx="120" cy="24" rx="110" ry="24" fill="#1e293b" stroke="#ffffff" stroke-width="1.8" />
+    <text x="120" y="29" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Select Goal &amp; Muscle Groups</text>
+  </g>
+
+  <!-- UC4: View Dashboard & Progress -->
+  <g id="uc-dash" transform="translate(390, 370)">
+    <ellipse cx="120" cy="26" rx="120" ry="26" fill="#1e293b" stroke="#38bdf8" stroke-width="2" />
+    <text x="120" y="31" font-size="12.5" font-weight="800" fill="#38bdf8" text-anchor="middle">View Personal Dashboard</text>
+  </g>
+
+  <!-- UC5: Log Daily Weight & Notes -->
+  <g id="uc-weight" transform="translate(390, 450)">
+    <ellipse cx="120" cy="24" rx="110" ry="24" fill="#1e293b" stroke="#ffffff" stroke-width="1.8" />
+    <text x="120" y="29" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Log Daily Weight Progress</text>
+  </g>
+
+  <!-- UC6: Browse & Manage Custom Meals -->
+  <g id="uc-meals" transform="translate(390, 520)">
+    <ellipse cx="120" cy="24" rx="110" ry="24" fill="#1e293b" stroke="#ffffff" stroke-width="1.8" />
+    <text x="120" y="29" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Browse &amp; Manage Custom Meals</text>
+  </g>
+
+  <!-- UC7: Browse & Create Workouts -->
+  <g id="uc-workouts" transform="translate(390, 590)">
+    <ellipse cx="120" cy="24" rx="110" ry="24" fill="#1e293b" stroke="#ffffff" stroke-width="1.8" />
+    <text x="120" y="29" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Create / Edit Workout Templates</text>
+  </g>
+
+  <!-- UC8: Schedule Weekly Workout -->
+  <g id="uc-schedule" transform="translate(390, 660)">
+    <ellipse cx="120" cy="24" rx="110" ry="24" fill="#1e293b" stroke="#ffffff" stroke-width="1.8" />
+    <text x="120" y="29" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Schedule Workout to Calendar</text>
+  </g>
+
+  <!-- UC9: Toggle Workout Completion -->
+  <g id="uc-toggle" transform="translate(390, 730)">
+    <ellipse cx="120" cy="24" rx="110" ry="24" fill="#1e293b" stroke="#ffffff" stroke-width="1.8" />
+    <text x="120" y="29" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Mark Scheduled Workout Complete</text>
+  </g>
+
+  <!-- UC10 (System Engine): Calculate BMR, TDEE & Hydration -->
+  <g id="uc-engine1" transform="translate(740, 270)">
+    <ellipse cx="125" cy="25" rx="125" ry="25" fill="#064e3b" stroke="#34d399" stroke-width="1.8" />
+    <text x="125" y="25" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">&lt;&lt;include&gt;&gt; Calculate BMR, TDEE</text>
+    <text x="125" y="38" font-size="10.5" font-weight="600" fill="#a7f3d0" text-anchor="middle">&amp; Water Intake Targets</text>
+  </g>
+
+  <!-- UC11 (System Engine): Generate Scaled 4-Meal Plan & Macros -->
+  <g id="uc-engine2" transform="translate(740, 360)">
+    <ellipse cx="125" cy="25" rx="125" ry="25" fill="#064e3b" stroke="#34d399" stroke-width="1.8" />
+    <text x="125" y="25" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">&lt;&lt;include&gt;&gt; Generate 4-Meal Plan</text>
+    <text x="125" y="38" font-size="10.5" font-weight="600" fill="#a7f3d0" text-anchor="middle">&amp; Target Macro Breakdown</text>
+  </g>
+
+  <!-- UC12 (System Engine): Enforce Goal/Muscle Selection Middleware -->
+  <g id="uc-engine3" transform="translate(740, 450)">
+    <ellipse cx="125" cy="25" rx="125" ry="25" fill="#064e3b" stroke="#34d399" stroke-width="1.8" />
+    <text x="125" y="25" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">&lt;&lt;include&gt;&gt; Enforce Goal Selection</text>
+    <text x="125" y="38" font-size="10.5" font-weight="600" fill="#a7f3d0" text-anchor="middle">via Application Middleware</text>
+  </g>
+
+  <!-- UC13 (Admin): View Staff Admin Dashboard & Stats -->
+  <g id="uc-admin-dash" transform="translate(680, 800)">
+    <ellipse cx="120" cy="25" rx="120" ry="25" fill="#2e1065" stroke="#c084fc" stroke-width="1.8" />
+    <text x="120" y="25" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">View Population Demographics</text>
+    <text x="120" y="38" font-size="10.5" font-weight="600" fill="#e9d5ff" text-anchor="middle">&amp; BMI / Goal Distribution</text>
+  </g>
+
+  <!-- UC14 (Admin): Manage Global Catalog & User Directory -->
+  <g id="uc-admin-dir" transform="translate(680, 880)">
+    <ellipse cx="120" cy="25" rx="120" ry="25" fill="#2e1065" stroke="#c084fc" stroke-width="1.8" />
+    <text x="120" y="25" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">Manage Member Accounts</text>
+    <text x="120" y="38" font-size="10.5" font-weight="600" fill="#e9d5ff" text-anchor="middle">&amp; Master Exercise/Diet Database</text>
+  </g>
+
+  <!-- UC15 (Admin): Audit Activity Logs -->
+  <g id="uc-admin-logs" transform="translate(680, 960)">
+    <ellipse cx="120" cy="25" rx="120" ry="25" fill="#2e1065" stroke="#c084fc" stroke-width="1.8" />
+    <text x="120" y="25" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">Audit Staff Actions &amp;</text>
+    <text x="120" y="38" font-size="10.5" font-weight="600" fill="#e9d5ff" text-anchor="middle">System Session Logs</text>
+  </g>
+
+
+  <!-- ========================================================= -->
+  <!-- ACTOR 1: USER / MEMBER (LEFT)                             -->
+  <!-- ========================================================= -->
+  <g transform="translate(100, 390)" text-anchor="middle">
+    <!-- Stick Figure Actor -->
+    <circle cx="40" cy="30" r="16" fill="url(#actor-user)" stroke="#ffffff" stroke-width="2" />
+    <line x1="40" y1="46" x2="40" y2="90" stroke="#ffffff" stroke-width="3" />
+    <line x1="12" y1="62" x2="68" y2="62" stroke="#ffffff" stroke-width="3" />
+    <line x1="40" y1="90" x2="16" y2="135" stroke="#ffffff" stroke-width="3" />
+    <line x1="40" y1="90" x2="64" y2="135" stroke="#ffffff" stroke-width="3" />
+    <text x="40" y="165" font-size="15" font-weight="800" fill="#38bdf8">Member / User</text>
+    <text x="40" y="182" font-size="11.5" font-weight="600" fill="#94a3b8">(Fitness Client)</text>
+  </g>
+
+
+  <!-- ========================================================= -->
+  <!-- ACTOR 2: SYSTEM CALCULATION ENGINE (TOP RIGHT)             -->
+  <!-- ========================================================= -->
+  <g transform="translate(1120, 300)" text-anchor="middle">
+    <rect x="0" y="10" width="75" height="60" rx="8" fill="url(#actor-system)" stroke="#ffffff" stroke-width="2" />
+    <text x="37" y="45" font-size="24" fill="#ffffff">⚙️</text>
+    <text x="37" y="90" font-size="14" font-weight="800" fill="#34d399">FitLife Engine</text>
+    <text x="37" y="106" font-size="11" font-weight="600" fill="#94a3b8">(Automated Logic)</text>
+  </g>
+
+
+  <!-- ========================================================= -->
+  <!-- ACTOR 3: SYSTEM ADMINISTRATOR (BOTTOM RIGHT)               -->
+  <!-- ========================================================= -->
+  <g transform="translate(1120, 810)" text-anchor="middle">
+    <circle cx="40" cy="30" r="16" fill="url(#actor-admin)" stroke="#ffffff" stroke-width="2" />
+    <line x1="40" y1="46" x2="40" y2="90" stroke="#ffffff" stroke-width="3" />
+    <line x1="12" y1="62" x2="68" y2="62" stroke="#ffffff" stroke-width="3" />
+    <line x1="40" y1="90" x2="16" y2="135" stroke="#ffffff" stroke-width="3" />
+    <line x1="40" y1="90" x2="64" y2="135" stroke="#ffffff" stroke-width="3" />
+    <text x="40" y="165" font-size="15" font-weight="800" fill="#c084fc">Fitness Manager</text>
+    <text x="40" y="182" font-size="11.5" font-weight="600" fill="#94a3b8">(Staff / Admin)</text>
+  </g>
+
+
+  <!-- ========================================================= -->
+  <!-- SOLID WHITE CONNECTING ASSOCIATION LINES                   -->
+  <!-- ========================================================= -->
+
+  <!-- User Associations -->
+  <line x1="170" y1="440" x2="390" y2="174" stroke="#ffffff" stroke-width="1.8" />
+  <line x1="170" y1="440" x2="390" y2="244" stroke="#ffffff" stroke-width="1.8" />
+  <line x1="170" y1="440" x2="390" y2="314" stroke="#ffffff" stroke-width="1.8" />
+  <line x1="170" y1="440" x2="390" y2="396" stroke="#ffffff" stroke-width="2.2" />
+  <line x1="170" y1="440" x2="390" y2="474" stroke="#ffffff" stroke-width="1.8" />
+  <line x1="170" y1="440" x2="390" y2="544" stroke="#ffffff" stroke-width="1.8" />
+  <line x1="170" y1="440" x2="390" y2="614" stroke="#ffffff" stroke-width="1.8" />
+  <line x1="170" y1="440" x2="390" y2="684" stroke="#ffffff" stroke-width="1.8" />
+  <line x1="170" y1="440" x2="390" y2="754" stroke="#ffffff" stroke-width="1.8" />
+
+  <!-- Engine Associations -->
+  <line x1="1120" y1="340" x2="990" y2="295" stroke="#34d399" stroke-width="1.8" />
+  <line x1="1120" y1="340" x2="990" y2="385" stroke="#34d399" stroke-width="1.8" />
+  <line x1="1120" y1="340" x2="990" y2="475" stroke="#34d399" stroke-width="1.8" />
+
+  <!-- Admin Associations -->
+  <line x1="1120" y1="870" x2="920" y2="825" stroke="#ffffff" stroke-width="1.8" />
+  <line x1="1120" y1="870" x2="920" y2="905" stroke="#ffffff" stroke-width="1.8" />
+  <line x1="1120" y1="870" x2="920" y2="985" stroke="#ffffff" stroke-width="1.8" />
+  <!-- Admin also can browse meals and workouts -->
+  <path d="M 1120 870 C 1050 780 650 630 630 614" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="4 4" />
+
+
+  <!-- ========================================================= -->
+  <!-- <<INCLUDE>> & <<EXTEND>> RELATIONSHIP DASHED LINES         -->
+  <!-- ========================================================= -->
+
+  <!-- Dashboard <<include>> BMR Engine -->
+  <path d="M 630 396 C 680 370 700 320 740 295" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#open-arrow)" />
+  <!-- Dashboard <<include>> Meal Plan Generator -->
+  <path d="M 630 396 L 740 385" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#open-arrow)" />
+  <!-- Profile Setup <<include>> Enforce Goal Middleware -->
+  <path d="M 630 244 C 680 290 700 420 740 460" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#open-arrow)" />
+
+  <!-- Schedule Workout <<extend>> Toggle Completion -->
+  <path d="M 510 684 L 510 730" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#open-arrow)" />
+  <text x="545" y="710" font-size="9" font-weight="600" fill="#cbd5e1">&lt;&lt;extend&gt;&gt;</text>
+
+</svg>

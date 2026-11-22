@@ -1,0 +1,49 @@
+{% extends "planner/base_admin.html" %}
+
+{% block title %}Goals &amp; BMI Analytics — FitLife Admin{% endblock %}
+
+{% block admin_content %}
+  {% include "components/page_header.html" with title="Goals & BMI Analytics" subtitle="Distribution of fitness goals and BMI categories across registered accounts." parent_label="Overview" parent_url="/admin-dashboard/" %}
+
+  <div class="metric-grid">
+    {% include "components/metric_card.html" with label="Total Profiled Accounts" value=total_users meta="Included in analytics" %}
+    {% include "components/metric_card.html" with label="Fitness Goal Categories" value=goal_counts|length meta="Active goal segments" %}
+    {% include "components/metric_card.html" with label="BMI Classifications" value=bmi_counts|length meta="Underweight to Obese" %}
+  </div>
+
+  <div class="breakdown-grid">
+    <div class="breakdown-card">
+      <div class="breakdown-card-header">
+        {% include "components/icon.html" with name="chart" %} Users by Fitness Goal
+      </div>
+      {% for label, count in goal_counts.items %}
+        <div class="breakdown-item">
+          <div class="breakdown-label">{{ label }}</div>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar-bg">
+              <div class="breakdown-bar-fill" style="width: {% if total_users > 0 %}{% widthratio count total_users 100 %}{% else %}0{% endif %}%;"></div>
+            </div>
+          </div>
+          <div class="breakdown-count">{{ count }}</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="breakdown-card">
+      <div class="breakdown-card-header">
+        {% include "components/icon.html" with name="trending-up" %} Users by BMI Category
+      </div>
+      {% for label, count in bmi_counts.items %}
+        <div class="breakdown-item">
+          <div class="breakdown-label">{{ label }}</div>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar-bg">
+              <div class="breakdown-bar-fill" style="width: {% if total_users > 0 %}{% widthratio count total_users 100 %}{% else %}0{% endif %}%;"></div>
+            </div>
+          </div>
+          <div class="breakdown-count">{{ count }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

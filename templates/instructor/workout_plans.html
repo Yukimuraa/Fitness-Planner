@@ -1,0 +1,48 @@
+{% extends "instructor/base_instructor.html" %}
+
+{% block title %}Workout Plans — FitLife Instructor{% endblock %}
+
+{% block inst_content %}
+  {% include "components/page_header.html" with title="Instructor Workout Plans" subtitle="Create custom workout plans for assigned members (kept separate from AI recommendations)." parent_label="Dashboard" parent_url="/instructor/" %}
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem;">
+    <div class="card card-form">
+      <div class="card-header">Create New Workout Plan</div>
+      <div class="card-body">
+        {% if assigned_members %}
+          <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+              <div class="form-group">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+              </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary" style="width:100%;">Create Plan &amp; Add Exercises</button>
+          </form>
+        {% else %}
+          {% include "components/empty_state.html" with title="No assigned members" message="Once an Admin assigns members to you, you can create workout plans for them here." %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Assigned Workout Plans (<span class="tabular-nums">{{ plans|length }}</span>)</div>
+      <div class="card-body">
+        {% for p in plans %}
+          <div style="padding:.8rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:.75rem;">
+            <div>
+              <strong>{{ p.title }}</strong>
+              <div class="tabular-nums" style="font-size:.875rem; color:var(--text-muted);">
+                Member: {{ p.member.username }} &bull; {{ p.frequency_per_week }}x/wk &bull; {{ p.exercises.count }} exercises
+              </div>
+            </div>
+            <a href="{% url 'planner:instructor_workout_plan_detail' p.pk %}" class="btn btn-outline btn-sm">Manage</a>
+          </div>
+        {% empty %}
+          {% include "components/empty_state.html" with title="No workout plans yet" message="Create a custom plan for an assigned member using the form." %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

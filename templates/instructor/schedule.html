@@ -1,0 +1,146 @@
+{% extends "instructor/base_instructor.html" %}
+
+{% block title %}My Schedule — FitLife Instructor{% endblock %}
+
+{% block inst_content %}
+  {% include "components/page_header.html" with title="My Weekly Schedule" subtitle="Customize your available weekdays, coaching time slots, and blocked dates (Asia/Manila)." parent_label="Dashboard" parent_url="/instructor/" %}
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
+    <div class="card card-form">
+      <div class="card-header">Quick-Add Suggested Coaching Slots</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="op" value="seed_defaults">
+          <p style="font-size:.875rem; color:var(--text-muted); margin-top:0;">Select weekdays to populate with Morning (7–10 AM), Afternoon (12–4 PM), and Evening (5–8 PM) slots:</p>
+          <div style="display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem;">
+            {% for code, label in day_choices %}
+              <label style="display:inline-flex; align-items:center; gap:.35rem; padding:.4rem .7rem; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:.875rem; cursor:pointer;">
+                <input type="checkbox" name="days" value="{{ code }}"> {{ label }}
+              </label>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Apply Suggested Slots</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card card-form">
+      <div class="card-header">Add Custom Time Slot</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="op" value="add_slot">
+          <div class="form-group">
+            <label class="form-label" for="id_day_of_week">Day of Week</label>
+            <select id="id_day_of_week" name="day_of_week" class="form-control">
+              {% for code, label in day_choices %}
+                <option value="{{ code }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="id_start_time">Start Time</label>
+              <input id="id_start_time" type="time" name="start_time" class="form-control" value="09:00" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="id_end_time">End Time</label>
+              <input id="id_end_time" type="time" name="end_time" class="form-control" value="10:00" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Add Custom Slot</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card card-form">
+      <div class="card-header">Block Unavailable Date / Time</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="op" value="block_date">
+          <div class="form-group">
+            <label class="form-label" for="id_block_date">Date</label>
+            <input id="id_block_date" type="date" name="date" class="form-control" min="{{ today|date:'Y-m-d' }}" required>
+          </div>
+          <div class="form-group">
+            <label style="display:flex; align-items:center; gap:.45rem; font-size:.875rem;">
+              <input type="checkbox" name="is_full_day" checked> Full Day Unavailable
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_blocked_slot">Or Specific Time Slot</label>
+            <input id="id_blocked_slot" type="text" name="blocked_time_slot" class="form-control" placeholder="e.g. 09:00 AM - 10:00 AM">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_block_reason">Reason (optional)</label>
+            <input id="id_block_reason" type="text" name="reason" class="form-control" placeholder="e.g. Holiday / Seminar">
+          </div>
+          <button type="submit" class="btn btn-danger btn-sm">Block Date</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem;">
+    <div class="card">
+      <div class="card-header">Configured Weekly Slots (<span class="tabular-nums">{{ slots|length }}</span>)</div>
+      <div class="card-body" style="max-height:400px; overflow-y:auto;">
+        {% for s in slots %}
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:.55rem 0; border-bottom:1px solid var(--border); gap:.5rem; flex-wrap:wrap;">
+            <div>
+              <strong>{{ s.get_day_of_week_display }}</strong>: <span class="tabular-nums">{{ s.time_slot_label }}</span>
+              {% if not s.is_active %}{% include "components/status_badge.html" with text="Paused" variant="danger" %}{% endif %}
+            </div>
+            <div style="display:flex; gap:.35rem;">
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="op" value="toggle_slot">
+                <input type="hidden" name="slot_id" value="{{ s.pk }}">
+                <button class="btn btn-outline btn-sm" type="submit">{% if s.is_active %}Pause{% else %}Enable{% endif %}</button>
+              </form>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="op" value="delete_slot">
+                <input type="hidden" name="slot_id" value="{{ s.pk }}">
+                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+              </form>
+            </div>
+          </div>
+        {% empty %}
+          {% include "components/empty_state.html" with title="No weekly slots yet" message="Add suggested or custom time slots above." %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Blocked Dates &amp; Confirmed Calendar</div>
+      <div class="card-body">
+        <h4 style="margin-top:0; font-size:1rem;">Unavailable Dates</h4>
+        {% for u in unavailable_dates %}
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:.5rem 0; border-bottom:1px solid var(--border); gap:.5rem;">
+            <span class="tabular-nums"><strong>{{ u.date|date:"M d, Y" }}</strong> {% if u.is_full_day %}(Full Day){% else %}({{ u.blocked_time_slot }}){% endif %} {{ u.reason }}</span>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="op" value="delete_block">
+              <input type="hidden" name="block_id" value="{{ u.pk }}">
+              <button class="btn btn-danger btn-sm" type="submit">Remove</button>
+            </form>
+          </div>
+        {% empty %}
+          <p class="text-muted" style="font-size:.9rem;">No blocked dates.</p>
+        {% endfor %}
+
+        <h4 style="margin-top:1.35rem; font-size:1rem;">Confirmed Appointments Calendar</h4>
+        {% for c in confirmed_bookings %}
+          <div style="padding:.5rem 0; border-bottom:1px solid var(--border);">
+            <strong class="tabular-nums">{{ c.session_date|date:"M d, Y" }}</strong> &bull; <span class="tabular-nums">{{ c.time_slot }}</span> — {{ c.user.username }}
+          </div>
+        {% empty %}
+          <p class="text-muted" style="margin:0; font-size:.9rem;">No upcoming confirmed sessions.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

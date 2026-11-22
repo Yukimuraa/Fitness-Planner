@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitLife — Complete System Diagrams & Export Viewer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #090d16;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      max-width: 800px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    .header p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      background: #1e293b;
+      padding: 0.4rem;
+      border-radius: 12px;
+      margin-bottom: 1.25rem;
+      border: 1px solid #334155;
+    }
+    .tab-btn {
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .btn {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #334155;
+      box-shadow: none;
+    }
+    .btn-secondary:hover {
+      background: #475569;
+    }
+    .diagram-container {
+      background: #0b0f19;
+      border-radius: 14px;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+      max-width: 1400px;
+      width: 100%;
+      overflow: auto;
+      border: 1px solid #334155;
+      padding: 1.5rem;
+    }
+    object {
+      width: 100%;
+      min-height: 850px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>FitLife System Architecture &amp; Diagrams</h1>
+    <p>Complete documentation diagrams: Use Case Diagram, Admin &amp; RBAC ERD, Whole System Schema, Operational Framework, and Core Planner ERD.</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchDiagram('usecase_diagram.svg', 'Use Case Diagram', 1300, 1100, event)">Use Case Diagram</button>
+    <button class="tab-btn" onclick="switchDiagram('admin_erd.svg', 'Admin &amp; RBAC ERD', 1350, 950, event)">Admin &amp; RBAC ERD</button>
+    <button class="tab-btn" onclick="switchDiagram('whole_system_erd.svg', 'Whole System ERD', 1450, 1050, event)">Whole System ERD</button>
+    <button class="tab-btn" onclick="switchDiagram('operational_framework.svg', 'Operational Framework', 1100, 800, event)">Operational Framework</button>
+    <button class="tab-btn" onclick="switchDiagram('erd_diagram.svg', 'Core Planner ERD', 1200, 950, event)">Core Planner ERD</button>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn" id="downloadBtn">📥 Download as High-Res PNG Image</button>
+    <a href="usecase_diagram.svg" id="svgLink" download="usecase_diagram.svg" class="btn btn-secondary">📄 Download SVG Vector</a>
+  </div>
+
+  <div class="diagram-container">
+    <object id="diagramObject" data="usecase_diagram.svg" type="image/svg+xml"></object>
+  </div>
+
+  <canvas id="exportCanvas" style="display: none;"></canvas>
+
+  <script>
+    let currentSvg = 'usecase_diagram.svg';
+    let currentWidth = 1300;
+    let currentHeight = 1100;
+
+    function switchDiagram(file, label, w, h, evt) {
+      currentSvg = file;
+      currentWidth = w;
+      currentHeight = h;
+      document.getElementById('diagramObject').data = file;
+      document.getElementById('svgLink').href = file;
+      document.getElementById('svgLink').download = file;
+
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(b => b.classList.remove('active'));
+      if (evt && evt.target) {
+        evt.target.classList.add('active');
+      }
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch(currentSvg);
+        const svgText = await response.text();
+
+        const canvas = document.getElementById('exportCanvas');
+        canvas.width = currentWidth * 2;
+        canvas.height = currentHeight * 2;
+        const ctx = canvas.getContext('2d');
+
+        const img = new Image();
+        const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+        const URL = window.URL || window.webkitURL || window;
+        const blobURL = URL.createObjectURL(svgBlob);
+
+        img.onload = () => {
+          ctx.fillStyle = '#0b0f19';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(blobURL);
+
+          const pngURI = canvas.toDataURL('image/png');
+          const a = document.createElement('a');
+          a.download = currentSvg.replace('.svg', '.png');
+          a.href = pngURI;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        };
+        img.src = blobURL;
+      } catch (err) {
+        alert('Could not export canvas image: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm delete — FitLife{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Delete {{ type }}?</h1>
+      <p class="page-subtitle">This action cannot be undone.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <p>Are you sure you want to delete the {{ type|lower }} <strong>{{ object }}</strong>?</p>
+      <form method="post" class="mt-2">
+        {% csrf_token %}
+        <div class="flex">
+          <button class="btn btn-danger" type="submit">Yes, delete</button>
+          <a class="btn btn-ghost" href="javascript:history.back()">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

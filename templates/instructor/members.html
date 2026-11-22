@@ -1,0 +1,75 @@
+{% extends "instructor/base_instructor.html" %}
+
+{% block title %}My Members — FitLife Instructor{% endblock %}
+
+{% block inst_content %}
+  {% include "components/page_header.html" with title="My Assigned Members" subtitle="View and coach members assigned to you by the Admin." parent_label="Dashboard" parent_url="/instructor/" %}
+
+  {% if member_rows %}
+    <div class="card mb-3">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.75rem;">
+        <span>Assigned Roster (<span class="tabular-nums">{{ member_rows|length }}</span>)</span>
+        <input type="search" id="memberSearch" class="form-control" placeholder="Search member or goal..." aria-label="Search assigned members" style="max-width:260px;">
+      </div>
+      <div class="table-wrap">
+        <table class="fl-table" id="membersTable">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Fitness Goal</th>
+              <th>BMI</th>
+              <th>Membership</th>
+              <th>Assigned Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in member_rows %}
+              <tr>
+                <td>
+                  <div style="display:flex; align-items:center; gap:.6rem;">
+                    <span class="app-user-avatar" style="background:var(--primary); border:none;">{{ row.member.username|slice:":1"|upper }}</span>
+                    <div>
+                      <strong>{{ row.member.username }}</strong>
+                      {% if row.latest_assessment %}
+                        <div style="font-size:.8125rem; color:var(--text-muted);">Last assessed {{ row.latest_assessment.assessed_at|date:"M d, Y" }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td>{{ row.profile.get_fitness_goal_display_short }}</td>
+                <td class="tabular-nums"><strong>{{ row.profile.bmi|default:"—" }}</strong> <span style="color:var(--text-muted);">({{ row.profile.bmi_category }})</span></td>
+                <td>
+                  {% if row.active_membership %}
+                    {% include "components/status_badge.html" with text=row.active_membership.package.name variant="success" %}
+                    <span class="tabular-nums" style="font-size:.8125rem; color:var(--text-muted); margin-left:.3rem;">{{ row.active_membership.sessions_remaining }} credits</span>
+                  {% else %}
+                    {% include "components/status_badge.html" with text="No Active Plan" variant="neutral" %}
+                  {% endif %}
+                </td>
+                <td class="tabular-nums">{{ row.assignment.assigned_at|date:"M d, Y" }}</td>
+                <td>
+                  <a href="{% url 'planner:instructor_member_detail' row.member.id %}" class="btn btn-primary btn-sm">Open Profile</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const mSearch = document.getElementById('memberSearch');
+      if (mSearch) {
+        mSearch.addEventListener('input', function () {
+          const q = this.value.toLowerCase();
+          document.querySelectorAll('#membersTable tbody tr').forEach(r => {
+            r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+          });
+        });
+      }
+    </script>
+  {% else %}
+    {% include "components/empty_state.html" with title="No members assigned yet" message="Members assigned to you by an Admin will appear here." %}
+  {% endif %}
+{% endblock %}

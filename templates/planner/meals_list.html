@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Meals — FitLife{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">My meals</h1>
+      <p class="page-subtitle">Build, track, and check meals against your allergies &amp; health conditions.</p>
+    </div>
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+      <a class="btn btn-outline" href="{% url 'planner:meal_health_check' %}">Meal Health &amp; Allergy Advisor</a>
+      <a class="btn btn-primary" href="{% url 'planner:meal_create' %}">+ New meal</a>
+    </div>
+  </div>
+
+  {% if profile.get_allergies_display_list or profile.get_health_conditions_display_list %}
+    <div class="alert alert-info mb-3" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem;">
+      <div>
+        <strong>Active Health Filters:</strong>
+        {% for a in profile.get_allergies_display_list %}
+          <span class="badge badge-danger">{{ a }} Allergy</span>
+        {% endfor %}
+        {% for c in profile.get_health_conditions_display_list %}
+          <span class="badge badge-warning">{{ c }}</span>
+        {% endfor %}
+      </div>
+      <a href="{% url 'accounts:edit_profile' %}" style="font-weight:600;">Update Health Info</a>
+    </div>
+  {% endif %}
+
+  {% if meal_rows %}
+    <div class="grid">
+      {% for row in meal_rows %}
+        {% with meal=row.meal analysis=row.analysis %}
+        <div class="grid-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem;">
+            <h4 class="title" style="margin:0;">{{ meal.name }}</h4>
+            <span class="badge badge-{{ analysis.verdict_class }}">{{ analysis.verdict }}</span>
+          </div>
+          <p class="desc">{{ meal.description|default:"No description yet." }}</p>
+          <div class="meta">
+            <span>{{ meal.get_meal_type_display }} &bull; {{ meal.total_calories }} kcal</span>
+            {% if meal.get_allergens_list %}
+              <span class="badge badge-warning">Allergens: {{ meal.allergens }}</span>
+            {% else %}
+              <span class="badge badge-success">Allergen-Free</span>
+            {% endif %}
+          </div>
+          {% if analysis.allergy_conflicts %}
+            <p style="color:#b91c1c; font-size:.82rem; font-weight:600; margin:.5rem 0 0;">
+              ⚠️ Conflicts with your {{ analysis.allergy_conflicts|join:", "|title }} allergy
+            </p>
+          {% endif %}
+          <div class="actions">
+            <a class="btn btn-primary btn-sm" href="{% url 'planner:meal_health_check_detail' meal.pk %}">Health Check</a>
+            <a class="btn btn-outline btn-sm" href="{% url 'planner:meal_edit' meal.pk %}">Edit</a>
+            <a class="btn btn-danger btn-sm" href="{% url 'planner:meal_delete' meal.pk %}">Delete</a>
+          </div>
+        </div>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h4>No meals yet</h4>
+      <p>Add your first meal and start building a balanced plan.</p>
+      <a class="btn btn-primary" href="{% url 'planner:meal_create' %}">+ Add your first meal</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
