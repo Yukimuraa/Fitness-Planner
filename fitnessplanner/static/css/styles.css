@@ -175,15 +175,23 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text); }
   align-items: center;
   justify-content: center;
   gap: .45rem;
-  padding: .65rem 1.2rem;
+  min-height: 40px;
+  padding: .55rem 1.15rem;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: .95rem;
+  font-size: .9375rem;
   cursor: pointer;
   text-decoration: none;
-  transition: all .15s ease;
+  transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
   font-family: inherit;
+}
+.btn:focus-visible,
+.app-nav-link:focus-visible,
+.app-menu-btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 .btn:hover { transform: translateY(-1px); }
 .btn:active { transform: translateY(0); }
@@ -203,7 +211,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text); }
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-danger:hover { background: #dc2626; color: #fff; }
 
-.btn-sm { padding: .4rem .8rem; font-size: .85rem; }
+.btn-sm { min-height: 36px; padding: .4rem .8rem; font-size: .875rem; }
 .btn-lg { padding: .85rem 1.5rem; font-size: 1.05rem; }
 .btn-block { width: 100%; }
 
@@ -254,7 +262,7 @@ textarea:focus {
 }
 .form-text, .helptext {
   display: block;
-  font-size: .8rem;
+  font-size: .8125rem;
   color: var(--text-muted);
   margin-top: .35rem;
 }
@@ -263,7 +271,7 @@ textarea:focus {
   padding: 0;
   margin: .35rem 0 0;
   color: var(--danger);
-  font-size: .85rem;
+  font-size: .875rem;
 }
 
 /* Default Django form rendering */
@@ -291,10 +299,7 @@ form p label { display: block; font-size: .88rem; font-weight: 600; margin-botto
   align-items: center;
   justify-content: center;
   padding: 2rem 1.25rem;
-  background:
-    radial-gradient(circle at 10% 10%, rgba(22, 163, 74, .12) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(249, 115, 22, .12) 0%, transparent 40%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .auth-card {
@@ -959,8 +964,10 @@ footer.fl-footer {
   color: #E2E8F0;
   display: flex;
   flex-direction: column;
-  position: sticky;
+  position: fixed;
+  left: 0;
   top: 0;
+  bottom: 0;
   height: 100vh;
   flex-shrink: 0;
   z-index: 50;
@@ -1094,6 +1101,7 @@ footer.fl-footer {
 .app-main {
   flex: 1;
   min-width: 0;
+  margin-left: 260px;
   display: flex;
   flex-direction: column;
 }
@@ -1257,9 +1265,28 @@ footer.fl-footer {
   100% { background-position: -200% 0; }
 }
 
-/* Responsive App Shell */
+/* Responsive App Shell & Mobile Usability (1440 -> 320px) */
+html, body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+.card, .grid-card, .metric-card, .app-main, .app-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.app-menu-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+
 @media (max-width: 960px) {
   .app-shell { flex-direction: column; }
+  .app-main { margin-left: 0; }
   .app-menu-btn { display: inline-flex; }
   .app-sidebar {
     position: fixed;
@@ -1269,6 +1296,45 @@ footer.fl-footer {
   }
   .app-sidebar.open { transform: translateX(0); }
   .app-content { padding: 1.25rem 1rem 3rem; }
+}
+
+@media (max-width: 768px) {
+  .btn, .btn-sm, .app-nav-link {
+    min-height: 44px;
+  }
+  .fl-topbar-actions, .page-header {
+    gap: .75rem;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .fl-navbar .container {
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .metric-grid,
+  .grid,
+  .pkg-grid,
+  .inst-grid,
+  .meal-plan-grid,
+  .fl-three-grid,
+  .fl-pkg-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .app-topbar {
+    padding: .65rem .85rem;
+  }
+  .card-body, .card-header {
+    padding: 1rem;
+  }
+  .fl-nav a {
+    padding: .45rem .65rem;
+    font-size: .875rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

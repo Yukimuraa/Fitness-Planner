@@ -2,74 +2,197 @@
 
 {% block title %}Meals — FitLife{% endblock %}
 
-{% block content %}
-<div class="container">
+{% block extra_head %}
+<style>
+  .meals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 1.25rem;
+  }
+  .meal-card-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.35rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .meal-card-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .meal-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-bottom: .65rem;
+  }
+  .meal-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 .4rem;
+    line-height: 1.3;
+  }
+  .meal-card-desc {
+    color: var(--text-secondary);
+    font-size: .9rem;
+    line-height: 1.5;
+    margin: 0 0 .9rem;
+  }
+  .meal-macro-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .4rem;
+    margin-bottom: .85rem;
+  }
+  .meal-macro-pill {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: .4rem .35rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .meal-macro-pill strong {
+    display: block;
+    font-size: .875rem;
+    color: var(--text);
+  }
+  .meal-macro-pill span {
+    display: block;
+    font-size: .8125rem;
+    color: var(--text-muted);
+  }
+  .meal-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-bottom: .85rem;
+  }
+  .meal-card-actions {
+    margin-top: auto;
+    padding-top: .9rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+  .meal-card-actions .btn-health {
+    flex: 1 1 130px;
+  }
+  @media (max-width: 480px) {
+    .meals-grid { grid-template-columns: 1fr; }
+    .meal-macro-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+{% endblock %}
 
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">My meals</h1>
-      <p class="page-subtitle">Build, track, and check meals against your allergies &amp; health conditions.</p>
-    </div>
-    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
-      <a class="btn btn-outline" href="{% url 'planner:meal_health_check' %}">Meal Health &amp; Allergy Advisor</a>
-      <a class="btn btn-primary" href="{% url 'planner:meal_create' %}">+ New meal</a>
+{% block content %}
+  {% include "components/page_header.html" with title="My Meals & Nutrition" subtitle="Browse meals, check calories and macros, and verify allergy safety." action_label="New Meal" action_url="/meals/add/" %}
+
+  <div class="card mb-3">
+    <div class="card-body" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.75rem;">
+      <div style="display:flex; flex-wrap:wrap; gap:.45rem; align-items:center;">
+        <strong style="font-size:.9rem;">Active Health Filters:</strong>
+        {% if profile.user.dietary_profile.no_known_allergies %}
+          {% include "components/status_badge.html" with text="No Known Allergies" variant="success" %}
+        {% elif profile.user.member_allergies.all %}
+          {% for ma in profile.user.member_allergies.all %}
+            {% include "components/status_badge.html" with text=ma.label variant="danger" %}
+          {% endfor %}
+        {% else %}
+          {% for a in profile.get_allergies_display_list %}
+            {% include "components/status_badge.html" with text=a variant="danger" %}
+          {% empty %}
+            {% include "components/status_badge.html" with text="None Listed" variant="neutral" %}
+          {% endfor %}
+        {% endif %}
+        <a href="{% url 'accounts:allergy_assessment' %}?from=profile" class="btn btn-ghost btn-sm">Update</a>
+      </div>
+
+      <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        <input type="search" id="mealSearch" class="form-control" placeholder="Search meals or ingredients..." aria-label="Search meals" style="max-width:240px;">
+        <a class="btn btn-outline btn-sm" href="{% url 'planner:meal_health_check' %}">Meal Health Advisor</a>
+      </div>
     </div>
   </div>
 
-  {% if profile.get_allergies_display_list or profile.get_health_conditions_display_list %}
-    <div class="alert alert-info mb-3" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem;">
-      <div>
-        <strong>Active Health Filters:</strong>
-        {% for a in profile.get_allergies_display_list %}
-          <span class="badge badge-danger">{{ a }} Allergy</span>
-        {% endfor %}
-        {% for c in profile.get_health_conditions_display_list %}
-          <span class="badge badge-warning">{{ c }}</span>
-        {% endfor %}
-      </div>
-      <a href="{% url 'accounts:edit_profile' %}" style="font-weight:600;">Update Health Info</a>
-    </div>
-  {% endif %}
-
   {% if meal_rows %}
-    <div class="grid">
+    <div class="meals-grid" id="mealsGrid">
       {% for row in meal_rows %}
         {% with meal=row.meal analysis=row.analysis %}
-        <div class="grid-card">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem;">
-            <h4 class="title" style="margin:0;">{{ meal.name }}</h4>
-            <span class="badge badge-{{ analysis.verdict_class }}">{{ analysis.verdict }}</span>
+        <article class="meal-card-item">
+          <div class="meal-card-top">
+            <span style="font-size:.8125rem; font-weight:600; color:var(--text-muted);">{{ meal.get_meal_type_display }}</span>
+            {% include "components/status_badge.html" with text=analysis.verdict variant=analysis.verdict_class %}
           </div>
-          <p class="desc">{{ meal.description|default:"No description yet." }}</p>
-          <div class="meta">
-            <span>{{ meal.get_meal_type_display }} &bull; {{ meal.total_calories }} kcal</span>
-            {% if meal.get_allergens_list %}
-              <span class="badge badge-warning">Allergens: {{ meal.allergens }}</span>
+
+          <h4 class="meal-card-title">{{ meal.name }}</h4>
+          <p class="meal-card-desc">{{ meal.description|default:"No description yet." }}</p>
+
+          <div class="meal-macro-row">
+            <div class="meal-macro-pill">
+              <strong>{{ meal.total_calories }}</strong>
+              <span>kcal</span>
+            </div>
+            <div class="meal-macro-pill">
+              <strong>{{ meal.total_protein }}g</strong>
+              <span>Protein</span>
+            </div>
+            <div class="meal-macro-pill">
+              <strong>{{ meal.total_carbs }}g</strong>
+              <span>Carbs</span>
+            </div>
+            <div class="meal-macro-pill">
+              <strong>{{ meal.total_fat }}g</strong>
+              <span>Fat</span>
+            </div>
+          </div>
+
+          <div class="meal-card-badges">
+            {% if analysis.missing_verification %}
+              {% include "components/status_badge.html" with text="Ingredients Unverified" variant="warning" %}
+            {% elif meal.get_allergens_list %}
+              {% include "components/status_badge.html" with text="Allergens: "|add:meal.allergens variant="warning" %}
             {% else %}
-              <span class="badge badge-success">Allergen-Free</span>
+              {% include "components/status_badge.html" with text="Verified Ingredients" variant="success" %}
             {% endif %}
           </div>
+
           {% if analysis.allergy_conflicts %}
-            <p style="color:#b91c1c; font-size:.82rem; font-weight:600; margin:.5rem 0 0;">
-              ⚠️ Conflicts with your {{ analysis.allergy_conflicts|join:", "|title }} allergy
-            </p>
+            <div class="alert alert-danger" style="padding:.5rem .75rem; font-size:.8125rem; margin-bottom:.85rem;">
+              Conflicts with your <strong>{{ analysis.allergy_conflicts|join:", "|title }}</strong> allergy
+            </div>
           {% endif %}
-          <div class="actions">
-            <a class="btn btn-primary btn-sm" href="{% url 'planner:meal_health_check_detail' meal.pk %}">Health Check</a>
+
+          <div class="meal-card-actions">
+            <a class="btn btn-primary btn-sm btn-health" href="{% url 'planner:meal_health_check_detail' meal.pk %}">Health Check</a>
             <a class="btn btn-outline btn-sm" href="{% url 'planner:meal_edit' meal.pk %}">Edit</a>
             <a class="btn btn-danger btn-sm" href="{% url 'planner:meal_delete' meal.pk %}">Delete</a>
           </div>
-        </div>
+        </article>
         {% endwith %}
       {% endfor %}
     </div>
-  {% else %}
-    <div class="empty-state">
-      <h4>No meals yet</h4>
-      <p>Add your first meal and start building a balanced plan.</p>
-      <a class="btn btn-primary" href="{% url 'planner:meal_create' %}">+ Add your first meal</a>
-    </div>
-  {% endif %}
 
-</div>
+    <script>
+      const mealSearch = document.getElementById('mealSearch');
+      if (mealSearch) {
+        mealSearch.addEventListener('input', function () {
+          const q = this.value.toLowerCase();
+          document.querySelectorAll('.meal-card-item').forEach(card => {
+            card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
+          });
+        });
+      }
+    </script>
+  {% else %}
+    {% include "components/empty_state.html" with title="No meals yet" message="Add your first meal and start building a safe nutrition plan." cta_label="Add your first meal" cta_url="/meals/add/" %}
+  {% endif %}
 {% endblock %}

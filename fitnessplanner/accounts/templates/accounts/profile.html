@@ -1,209 +1,92 @@
 {% extends "base.html" %}
 
-
-
-{% block title %}{{ user.username }} — Profile{% endblock %}
-
-
+{% block title %}My Profile — FitLife{% endblock %}
 
 {% block content %}
+  {% include "components/page_header.html" with title=user.get_full_name|default:user.username subtitle="Manage your personal information, fitness goals, body metrics, and dietary profile." action_label="Edit Profile" action_url="/accounts/edit/" %}
 
-<div class="container-narrow">
-
-
-
-  <div class="page-header">
-
-    <div>
-
-      <h1 class="page-title">{{ user.username }}</h1>
-
-      <p class="page-subtitle">Personal info, fitness profile &amp; progress.</p>
-
-    </div>
-
-    <div class="flex">
-
-      <a class="btn btn-outline" href="{% url 'accounts:progress' %}">Track progress</a>
-
-      <a class="btn btn-primary" href="{% url 'accounts:edit_profile' %}">Edit profile</a>
-
-    </div>
-
+  <div class="metric-grid">
+    {% include "components/metric_card.html" with label="Height" value=profile.height_cm|default:"—" meta="cm" %}
+    {% include "components/metric_card.html" with label="Weight" value=profile.weight_kg|default:"—" meta="kg" %}
+    {% include "components/metric_card.html" with label="BMI" value=profile.bmi|default:"—" meta=profile.bmi_category %}
+    {% include "components/metric_card.html" with label="Daily Calorie Target" value=profile.daily_calorie_recommendation|default:"—" meta="kcal / day" %}
   </div>
 
-
-
-  <div class="stat-grid">
-
-    <div class="stat-card">
-
-      <div class="ic">&#128200;</div>
-
-      <div class="label">Height</div>
-
-      <div class="value">{{ profile.height_cm|default:"—" }}<span style="font-size:1rem;color:var(--text-muted);"> cm</span></div>
-
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem;">
+    <div class="card">
+      <div class="card-header">Fitness &amp; Personal Information</div>
+      <div class="card-body">
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
+        <p><strong>Age / Gender:</strong> <span class="tabular-nums">{{ profile.age|default:"—" }}</span> / {{ profile.get_gender_display_short }}</p>
+        <p><strong>Fitness Goal:</strong> {{ profile.get_fitness_goal_display_short }}</p>
+        <p><strong>Activity Level:</strong> {{ profile.get_activity_level_display_short }}</p>
+        <p style="margin-bottom:0;"><strong>Bio:</strong> {{ profile.bio|default:"No bio added yet." }}</p>
+      </div>
     </div>
 
-    <div class="stat-card accent">
-
-      <div class="ic">&#9878;</div>
-
-      <div class="label">Weight</div>
-
-      <div class="value">{{ profile.weight_kg|default:"—" }}<span style="font-size:1rem;color:var(--text-muted);"> kg</span></div>
-
+    <div class="card">
+      <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Allergy &amp; Dietary Assessment</span>
+        <a href="{% url 'accounts:allergy_assessment' %}?from=profile" class="btn btn-outline btn-sm">Update</a>
+      </div>
+      <div class="card-body">
+        <p>
+          <strong>Food Allergies:</strong>
+          {% if profile.user.dietary_profile.no_known_allergies %}
+            {% include "components/status_badge.html" with text="No known food allergies" variant="success" %}
+          {% elif profile.user.member_allergies.all %}
+            {% for ma in profile.user.member_allergies.all %}
+              {% include "components/status_badge.html" with text=ma.label variant="danger" %}
+            {% endfor %}
+          {% else %}
+            {{ profile.get_allergies_display_list|join:", "|default:"None listed" }}
+          {% endif %}
+        </p>
+        <p>
+          <strong>Food Intolerances:</strong>
+          {% if profile.user.dietary_profile.no_known_intolerances %}
+            {% include "components/status_badge.html" with text="None / Not sure" variant="neutral" %}
+          {% elif profile.user.member_intolerances.all %}
+            {% for mi in profile.user.member_intolerances.all %}
+              {% include "components/status_badge.html" with text=mi.label variant="warning" %}
+            {% endfor %}
+          {% else %}
+            None listed
+          {% endif %}
+        </p>
+        <p style="margin-bottom:0;">
+          <strong>Dietary Preferences:</strong>
+          {% if profile.user.dietary_profile.dietary_preferences.all %}
+            {% for dp in profile.user.dietary_profile.dietary_preferences.all %}
+              {% include "components/status_badge.html" with text=dp.name variant="info" %}
+            {% endfor %}
+          {% else %}
+            {{ profile.get_dietary_preference_display|default:"No specific preference" }}
+          {% endif %}
+        </p>
+      </div>
     </div>
-
-    <div class="stat-card cool">
-
-      <div class="ic">&#128202;</div>
-
-      <div class="label">BMI</div>
-
-      <div class="value">{{ profile.bmi|default:"—" }}</div>
-
-      <div class="meta">based on your height &amp; weight</div>
-
-    </div>
-
   </div>
 
-
-
-  <div class="card mt-2">
-
-    <div class="card-header">Fitness profile</div>
-
-    <div class="card-body">
-
-      <p><strong>Age:</strong> {{ profile.age|default:"—" }}</p>
-
-      <p><strong>Gender:</strong> {{ profile.get_gender_display|default:"—" }}</p>
-
-      <p><strong>Fitness goal:</strong> {{ profile.get_fitness_goal_display|default:"—" }}</p>
-
-      <p><strong>Activity level:</strong> {{ profile.get_activity_level_display|default:"—" }}</p>
-
-    </div>
-
-  </div>
-
-  <div class="card mt-2">
+  <div class="card mt-3">
     <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-      <span>Allergy &amp; Dietary Assessment</span>
-      <a href="{% url 'accounts:allergy_assessment' %}?from=profile" class="btn btn-outline btn-sm">Update</a>
-    </div>
-    <div class="card-body">
-      <p>
-        <strong>Food Allergies:</strong>
-        {% if profile.user.dietary_profile.no_known_allergies %}
-          No known food allergies
-        {% elif profile.user.member_allergies.all %}
-          {% for ma in profile.user.member_allergies.all %}
-            <span class="badge badge-danger">{{ ma.label }}</span>
-          {% endfor %}
-        {% else %}
-          {{ profile.get_allergies_display_list|join:", "|default:"None listed" }}
-        {% endif %}
-      </p>
-      <p>
-        <strong>Food Intolerances:</strong>
-        {% if profile.user.dietary_profile.no_known_intolerances %}
-          None / Not sure
-        {% elif profile.user.member_intolerances.all %}
-          {% for mi in profile.user.member_intolerances.all %}
-            <span class="badge badge-warning">{{ mi.label }}</span>
-          {% endfor %}
-        {% else %}
-          None listed
-        {% endif %}
-      </p>
-      <p style="margin-bottom:0;">
-        <strong>Dietary Preferences:</strong>
-        {% if profile.user.dietary_profile.dietary_preferences.all %}
-          {% for dp in profile.user.dietary_profile.dietary_preferences.all %}
-            <span class="badge badge-info">{{ dp.name }}</span>
-          {% endfor %}
-        {% else %}
-          {{ profile.get_dietary_preference_display|default:"No specific preference" }}
-        {% endif %}
-      </p>
-    </div>
-  </div>
-
-
-
-  <div class="card mt-2">
-
-    <div class="card-header">About me</div>
-
-    <div class="card-body">
-
-      <p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
-
-      <p><strong>Bio:</strong> {{ profile.bio|default:"You haven't added a bio yet." }}</p>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="card mt-2">
-
-    <div class="card-header">
-
-      Recent progress
-
+      <span>Recent Weight Progress</span>
       <a class="btn btn-ghost btn-sm" href="{% url 'accounts:progress' %}">View all</a>
-
     </div>
-
     <div class="card-body">
-
       {% if recent_progress %}
-
         <ul class="item-list">
-
           {% for e in recent_progress %}
-
             <li>
-
-              <div>
-
-                <div class="name">{{ e.recorded_at|date:"M j, Y" }}</div>
-
-                <div class="desc">
-
-                  {% if e.weight_kg %}{{ e.weight_kg }} kg{% else %}—{% endif %}
-
-                  {% if e.notes %} &middot; {{ e.notes }}{% endif %}
-
-                </div>
-
-              </div>
-
+              <span class="tabular-nums">{{ e.recorded_at|date:"M j, Y" }}{% if e.notes %} — {{ e.notes }}{% endif %}</span>
+              <strong class="tabular-nums">{{ e.weight_kg|default:"—" }} kg</strong>
             </li>
-
           {% endfor %}
-
         </ul>
-
       {% else %}
-
-        <p class="text-muted">No progress logged yet. <a href="{% url 'accounts:progress' %}">Log your first entry</a>.</p>
-
+        {% include "components/empty_state.html" with title="No progress entries yet" message="Log your weight on the Dashboard or Progress page." cta_label="Log Progress" cta_url="/accounts/progress/" %}
       {% endif %}
-
     </div>
-
   </div>
-
-
-
-</div>
-
 {% endblock %}
-

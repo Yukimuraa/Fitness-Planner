@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Smart Fitness Coach &amp; Imbalance — FitLife{% endblock %}
+{% block title %}Smart Fitness Coach — FitLife{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -10,136 +10,87 @@
     gap: 1.5rem;
     margin-bottom: 2rem;
   }
-  @media (max-width: 960px) {
-    .coach-grid { grid-template-columns: 1fr; }
-  }
   .score-ring {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 84px;
-    height: 84px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    font-size: 1.65rem;
+    font-size: 1.5rem;
     font-weight: 800;
-    border: 6px solid #16a34a;
-    background: #f0fdf4;
-    color: #15803d;
+    font-variant-numeric: tabular-nums;
+    border: 5px solid var(--primary);
+    background: var(--success-bg);
+    color: var(--success);
     flex-shrink: 0;
   }
-  .score-ring.warning { border-color: #f59e0b; background: #fffbeb; color: #b45309; }
-  .score-ring.danger { border-color: #ef4444; background: #fef2f2; color: #b91c1c; }
+  .score-ring.warning { border-color: var(--warning); background: var(--warning-bg); color: var(--warning); }
+  .score-ring.danger { border-color: var(--danger); background: var(--danger-bg); color: var(--danger); }
   .dist-row {
     display: flex;
     align-items: center;
     gap: .75rem;
     margin-bottom: .55rem;
-    font-size: .85rem;
+    font-size: .875rem;
   }
   .dist-label { width: 155px; font-weight: 600; flex-shrink: 0; }
   .dist-bar-bg {
     flex: 1;
-    height: 10px;
-    background: #e2e8f0;
+    height: 9px;
+    background: var(--bg-soft);
     border-radius: 999px;
     overflow: hidden;
   }
   .dist-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #16a34a, #22c55e);
+    background: var(--primary);
     border-radius: 999px;
   }
   .imbalance-item {
     border: 1px solid var(--border);
     border-left-width: 4px;
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     padding: 1rem 1.15rem;
-    margin-bottom: 1rem;
+    margin-bottom: .9rem;
     background: var(--surface);
   }
-  .imbalance-item.high { border-left-color: #ef4444; background: #fef2f2; }
-  .imbalance-item.medium { border-left-color: #f59e0b; background: #fffbeb; }
-  .imbalance-item.info { border-left-color: #0ea5e9; background: #f0f9ff; }
-  .workout-rec-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: .75rem;
-    background: var(--surface);
-  }
-  .hr-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .75rem;
-    margin: .9rem 0;
-  }
-  .hr-pill {
-    background: var(--bg, #f8fafc);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: .65rem .9rem;
-    font-size: .85rem;
-  }
+  .imbalance-item.high { border-left-color: var(--danger); background: var(--danger-bg); }
+  .imbalance-item.medium { border-left-color: var(--warning); background: var(--warning-bg); }
+  .imbalance-item.info { border-left-color: var(--info); background: var(--info-bg); }
+  @media (max-width: 960px) { .coach-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 480px) { .dist-label { width: 105px; font-size: .8125rem; } }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Smart Fitness Coach</h1>
-      <p class="page-subtitle">Personalized fitness system based on your profile details, plus workout imbalance diagnostics.</p>
-    </div>
-    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
-      <a class="btn btn-outline" href="{% url 'accounts:edit_profile' %}">Update My Details</a>
-      <a class="btn btn-primary" href="{% url 'planner:schedule_list' %}">View My Schedule</a>
-    </div>
-  </div>
+  {% include "components/page_header.html" with title="Smart Fitness Coach" subtitle="System-generated fitness split and 30-day workout balance screening (informational only, not a medical diagnosis)." action_label="Update My Details" action_url="/accounts/edit/" %}
 
   <div class="coach-grid">
-    <!-- Left: Personalized Fitness System Based on Profile -->
+    <!-- Personalized Fitness System -->
     <div class="card">
-      <div class="card-header">Fitness System Suggested From Your Details</div>
+      <div class="card-header">Personalized Fitness System</div>
       <div class="card-body">
         <div style="display:flex; flex-wrap:wrap; gap:.45rem; margin-bottom:1rem;">
-          <span class="badge badge-info">Goal: {{ profile.get_fitness_goal_display_short }}</span>
-          <span class="badge badge-info">Activity: {{ profile.get_activity_level_display_short }}</span>
+          {% include "components/status_badge.html" with text="Goal: "|add:profile.get_fitness_goal_display_short variant="info" %}
+          {% include "components/status_badge.html" with text="Activity: "|add:profile.get_activity_level_display_short variant="neutral" %}
           {% if fitness_suggestion.bmi_val %}
-            <span class="badge badge-success">BMI: {{ fitness_suggestion.bmi_val }} ({{ fitness_suggestion.bmi_cat }})</span>
-          {% endif %}
-          {% if profile.age %}
-            <span class="badge badge-info">Age: {{ profile.age }}</span>
+            {% include "components/status_badge.html" with text="BMI: "|add:fitness_suggestion.bmi_val|stringformat:"s" variant="success" %}
           {% endif %}
         </div>
 
         <h3 style="margin:.25rem 0 .35rem;">{{ fitness_suggestion.split_title }}</h3>
-        <p style="color:var(--text-muted); margin-bottom:1rem;">{{ fitness_suggestion.split_summary }}</p>
+        <p style="color:var(--text-secondary); margin-bottom:1rem;">{{ fitness_suggestion.split_summary }}</p>
 
-        <div class="hr-pills">
-          <div class="hr-pill">
-            <strong>Frequency:</strong> {{ fitness_suggestion.days_per_week }} days/week
-          </div>
-          <div class="hr-pill">
-            <strong>Duration:</strong> ~{{ fitness_suggestion.mins_per_session }} min/session
-          </div>
-          <div class="hr-pill">
-            <strong>Intensity:</strong> {{ fitness_suggestion.intensity_label }}
-          </div>
-          <div class="hr-pill">
-            <strong>Fat-Burn HR:</strong> {{ fitness_suggestion.hr_fat_burn.0 }}–{{ fitness_suggestion.hr_fat_burn.1 }} bpm
-          </div>
-          <div class="hr-pill">
-            <strong>Cardio HR:</strong> {{ fitness_suggestion.hr_cardio.0 }}–{{ fitness_suggestion.hr_cardio.1 }} bpm
-          </div>
+        <div class="metric-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+          {% include "components/metric_card.html" with label="Frequency" value=fitness_suggestion.days_per_week meta="days / week" %}
+          {% include "components/metric_card.html" with label="Session Length" value=fitness_suggestion.mins_per_session meta="min / session" %}
+          {% include "components/metric_card.html" with label="Fat-Burn HR" value=fitness_suggestion.hr_fat_burn.0|stringformat:"s"|add:"–"|add:fitness_suggestion.hr_fat_burn.1|stringformat:"s" meta="bpm target" %}
         </div>
 
         {% if fitness_suggestion.safety_notes %}
-          <div class="alert alert-warning" style="font-size:.86rem; margin-bottom:1rem;">
-            <strong>Health &amp; Safety Adjustments:</strong>
+          <div class="alert alert-warning" style="font-size:.875rem; margin-bottom:1rem;">
+            <strong>Training Adjustments:</strong>
             <ul style="margin:.35rem 0 0 1.1rem; padding:0;">
               {% for note in fitness_suggestion.safety_notes %}
                 <li>{{ note }}</li>
@@ -148,69 +99,67 @@
           </div>
         {% endif %}
 
-        <h4 style="margin:1.25rem 0 .75rem;">Recommended Workouts For You</h4>
+        <h4 style="margin:1rem 0 .65rem;">Recommended Workouts</h4>
         {% for w in fitness_suggestion.recommended_workouts %}
-          <div class="workout-rec-card">
+          <div style="border:1px solid var(--border); border-radius:var(--radius-sm); padding:.85rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:.75rem; margin-bottom:.65rem;">
             <div>
               <strong>{{ w.name }}</strong>
-              <div style="font-size:.82rem; color:var(--text-muted);">
-                {{ w.get_muscle_group_display }} &bull; {{ w.get_workout_type_display }} &bull; {{ w.duration_min }} min &bull; ~{{ w.calories_burned_est }} kcal
+              <div class="tabular-nums" style="font-size:.8125rem; color:var(--text-muted);">
+                {{ w.get_muscle_group_display }} &bull; {{ w.get_workout_type_display }} &bull; {{ w.duration_min }} min
               </div>
             </div>
-            <form method="post" action="{% url 'planner:quick_schedule_workout' w.pk %}">
+            <form method="post" action="{% url 'planner:quick_schedule_workout' w.pk %}" style="margin:0;">
               {% csrf_token %}
-              <button type="submit" class="btn btn-primary btn-sm">+ Schedule</button>
+              <button type="submit" class="btn btn-primary btn-sm">Schedule</button>
             </form>
           </div>
         {% endfor %}
       </div>
     </div>
 
-    <!-- Right: System Suggest Imbalance -->
+    <!-- Workout Imbalance Screening -->
     <div class="card">
-      <div class="card-header">System Imbalance Diagnostics (Last 30 Days)</div>
+      <div class="card-header">30-Day Workout Balance Screening</div>
       <div class="card-body">
-        <div style="display:flex; align-items:center; gap:1.25rem; margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:1.15rem; margin-bottom:1.35rem;">
           <div class="score-ring {{ imbalance_report.status_class }}">
             {{ imbalance_report.score }}
           </div>
           <div>
-            <span class="badge badge-{{ imbalance_report.status_class }}" style="margin-bottom:.3rem; display:inline-block;">
-              {{ imbalance_report.status }}
-            </span>
-            <h3 style="margin:.15rem 0;">Balance Score: {{ imbalance_report.score }}/100</h3>
-            <p style="margin:0; font-size:.86rem; color:var(--text-muted);">
-              Analyzed {{ imbalance_report.total_sessions }} scheduled workout{{ imbalance_report.total_sessions|pluralize }} across muscle groups &amp; modalities.
+            {% include "components/status_badge.html" with text=imbalance_report.status variant=imbalance_report.status_class %}
+            <h3 style="margin:.3rem 0 .15rem;" class="tabular-nums">Balance Score: {{ imbalance_report.score }}/100</h3>
+            <p class="tabular-nums" style="margin:0; font-size:.875rem; color:var(--text-muted);">
+              Analyzed {{ imbalance_report.total_sessions }} scheduled workout{{ imbalance_report.total_sessions|pluralize }}.
             </p>
           </div>
         </div>
 
-        <h4 style="margin:0 0 .75rem;">Muscle Group Distribution</h4>
-        <div style="margin-bottom:1.5rem;">
+        <h4 style="margin:0 0 .65rem;">Muscle Group Distribution</h4>
+        <div style="margin-bottom:1.35rem;">
           {% for d in imbalance_report.distribution %}
             <div class="dist-row">
               <div class="dist-label">{{ d.label }}</div>
               <div class="dist-bar-bg">
                 <div class="dist-bar-fill" style="width:{{ d.pct }}%;"></div>
               </div>
-              <div style="width:28px; text-align:right; font-weight:700;">{{ d.count }}</div>
+              <div class="tabular-nums" style="width:28px; text-align:right; font-weight:700;">{{ d.count }}</div>
             </div>
           {% endfor %}
         </div>
 
-        <h4 style="margin:0 0 .75rem;">Detected Imbalances &amp; Fixes</h4>
+        <h4 style="margin:0 0 .65rem;">Screening Observations</h4>
         {% if imbalance_report.imbalances %}
           {% for imb in imbalance_report.imbalances %}
             <div class="imbalance-item {{ imb.severity }}">
-              <div style="font-weight:800; margin-bottom:.25rem;">{{ imb.title }}</div>
-              <p style="font-size:.86rem; margin:0 0 .45rem;">{{ imb.detail }}</p>
-              <p style="font-size:.84rem; margin:0 0 .6rem;"><strong>Fix:</strong> {{ imb.recommendation }}</p>
+              <div style="font-weight:700; margin-bottom:.25rem;">{{ imb.title }}</div>
+              <p style="font-size:.875rem; margin:0 0 .4rem;">{{ imb.detail }}</p>
+              <p style="font-size:.875rem; margin:0 0 .55rem;"><strong>Suggestion:</strong> {{ imb.recommendation }}</p>
               {% if imb.suggested_workouts %}
-                <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                <div style="display:flex; flex-wrap:wrap; gap:.45rem;">
                   {% for sw in imb.suggested_workouts %}
-                    <form method="post" action="{% url 'planner:quick_schedule_workout' sw.pk %}">
+                    <form method="post" action="{% url 'planner:quick_schedule_workout' sw.pk %}" style="margin:0;">
                       {% csrf_token %}
-                      <button type="submit" class="btn btn-outline btn-sm">+ Schedule {{ sw.name }}</button>
+                      <button type="submit" class="btn btn-outline btn-sm">Schedule {{ sw.name }}</button>
                     </form>
                   {% endfor %}
                 </div>
@@ -219,11 +168,10 @@
           {% endfor %}
         {% else %}
           <div class="alert alert-success">
-            Great job! Your current workout schedule shows balanced push/pull, upper/lower, and core/mobility coverage.
+            Your current workout schedule shows balanced push/pull, upper/lower, and core/mobility coverage.
           </div>
         {% endif %}
       </div>
     </div>
   </div>
-</div>
 {% endblock %}

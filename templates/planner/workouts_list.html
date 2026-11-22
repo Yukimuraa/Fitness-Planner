@@ -3,25 +3,32 @@
 {% block title %}Workouts — FitLife{% endblock %}
 
 {% block content %}
-<div class="container">
-
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Workout library</h1>
-      <p class="page-subtitle">Reusable workout templates you can schedule any day.</p>
-    </div>
-    <a class="btn btn-primary" href="{% url 'planner:workout_create' %}">+ New workout</a>
-  </div>
+  {% include "components/page_header.html" with title="Workout Library" subtitle="Reusable strength, cardio, and mobility templates you can schedule any day." action_label="New Workout" action_url="/workouts/add/" %}
 
   {% if workouts %}
-    <div class="grid">
+    <div class="card mb-3">
+      <div class="card-body" style="display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+        <input type="search" id="workoutSearch" class="form-control" placeholder="Search workouts or muscle groups..." aria-label="Search workouts" style="max-width:280px;">
+        <select id="workoutDiffFilter" class="form-control" aria-label="Filter by difficulty" style="max-width:180px;">
+          <option value="">All Levels</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid" id="workoutsGrid">
       {% for w in workouts %}
-        <div class="grid-card">
-          <h4 class="title">{{ w.name }}</h4>
+        <div class="grid-card workout-card-item" data-diff="{{ w.difficulty }}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; margin-bottom:.4rem;">
+            <h4 class="title" style="margin:0;">{{ w.name }}</h4>
+            {% include "components/status_badge.html" with text=w.get_difficulty_display variant="neutral" %}
+          </div>
           <p class="desc">{{ w.description|default:"No description yet." }}</p>
-          <div class="meta">
-            <span>Duration</span>
-            <span class="badge badge-accent">{{ w.duration_min }} min</span>
+          <div class="meta tabular-nums">
+            <span>{{ w.get_muscle_group_display }} &bull; {{ w.get_workout_type_display }}</span>
+            {% include "components/status_badge.html" with text=w.duration_min|stringformat:"s"|add:" min" variant="info" %}
           </div>
           <div class="actions">
             <a class="btn btn-outline btn-sm" href="{% url 'planner:workout_edit' w.pk %}">Edit</a>
@@ -30,13 +37,21 @@
         </div>
       {% endfor %}
     </div>
-  {% else %}
-    <div class="empty-state">
-      <h4>No workouts yet</h4>
-      <p>Create your first workout template — strength, cardio, yoga, anything.</p>
-      <a class="btn btn-primary" href="{% url 'planner:workout_create' %}">+ Add your first workout</a>
-    </div>
-  {% endif %}
 
-</div>
+    <script>
+      function filterWorkouts() {
+        const q = document.getElementById('workoutSearch').value.toLowerCase();
+        const diff = document.getElementById('workoutDiffFilter').value;
+        document.querySelectorAll('.workout-card-item').forEach(card => {
+          const matchText = card.textContent.toLowerCase().includes(q);
+          const matchDiff = !diff || card.dataset.diff === diff;
+          card.style.display = (matchText && matchDiff) ? '' : 'none';
+        });
+      }
+      document.getElementById('workoutSearch').addEventListener('input', filterWorkouts);
+      document.getElementById('workoutDiffFilter').addEventListener('change', filterWorkouts);
+    </script>
+  {% else %}
+    {% include "components/empty_state.html" with title="No workouts yet" message="Create your first workout template — strength, cardio, or mobility." cta_label="Add your first workout" cta_url="/workouts/add/" %}
+  {% endif %}
 {% endblock %}

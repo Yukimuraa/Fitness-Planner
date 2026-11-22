@@ -1,50 +1,292 @@
 {% extends "base.html" %}
 
-{% block title %}FitLife — Your personal diet & fitness planner{% endblock %}
+{% block title %}FitLife — Build a Stronger, Healthier You{% endblock %}
+
+{% block extra_head %}
+<style>
+  .fl-hero {
+    padding: 4.5rem 0 3.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .fl-hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  .fl-hero h1 {
+    font-size: clamp(2.25rem, 4.2vw, 3.25rem);
+    line-height: 1.1;
+    letter-spacing: -.03em;
+    margin: .75rem 0 1rem;
+    color: var(--text);
+  }
+  .fl-hero p {
+    font-size: 1.0625rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin: 0 0 1.75rem;
+    max-width: 540px;
+  }
+  .fl-hero-actions {
+    display: flex;
+    gap: .85rem;
+    flex-wrap: wrap;
+  }
+  .app-preview-frame {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .app-preview-bar {
+    background: #0F172A;
+    color: #E2E8F0;
+    padding: .7rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: .8125rem;
+    font-weight: 600;
+  }
+  .app-preview-body {
+    padding: 1.15rem;
+    display: grid;
+    gap: .85rem;
+  }
+  .preview-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .65rem;
+  }
+  .preview-kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: .75rem;
+  }
+  .preview-kpi span { display: block; font-size: .8125rem; color: var(--text-muted); }
+  .preview-kpi strong { font-size: 1.15rem; font-variant-numeric: tabular-nums; color: var(--text); }
+  .fl-section {
+    padding: 4rem 0;
+  }
+  .fl-section-alt {
+    padding: 4rem 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .fl-section-head {
+    max-width: 640px;
+    margin-bottom: 2.25rem;
+  }
+  .fl-section-head h2 {
+    font-size: 1.85rem;
+    letter-spacing: -.02em;
+    margin: 0 0 .5rem;
+  }
+  .fl-section-head p {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+  .fl-three-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+  }
+  .fl-pkg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.15rem;
+  }
+  @media (max-width: 900px) {
+    .fl-hero-grid { grid-template-columns: 1fr; }
+    .preview-kpis { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="landing-hero">
+<section class="fl-hero">
   <div class="container">
-    <h1>Plan your <span class="accent">diet</span> &amp; <span class="accent">fitness</span><br>like a pro athlete.</h1>
-    <p>FitLife brings your meals, workouts, and weekly schedule together in one beautiful planner — so you can stop guessing and start progressing.</p>
-    <div class="cta-row">
-      <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Get started — it's free</a>
-      <a href="{% url 'login' %}" class="btn btn-outline btn-lg">I already have an account</a>
+    <div class="fl-hero-grid">
+      <div>
+        <span class="badge badge-success">Training, Nutrition &amp; Coaching</span>
+        <h1>Build a Stronger, Healthier You.</h1>
+        <p>FitLife brings your workouts, allergy-safe meal planning, body progress, and certified coaching together in one structured platform.</p>
+        <div class="fl-hero-actions">
+          <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Get Started</a>
+          <a href="{% url 'login' %}" class="btn btn-outline btn-lg">Log In</a>
+        </div>
+      </div>
+
+      <div class="app-preview-frame" aria-label="FitLife interface preview">
+        <div class="app-preview-bar">
+          <span>FitLife Member Workspace</span>
+          <span class="badge badge-success" style="font-size:.8125rem;">Allergy Guard Active</span>
+        </div>
+        <div class="app-preview-body">
+          <div class="preview-kpis">
+            <div class="preview-kpi">
+              <span>Daily Target</span>
+              <strong>2,150 kcal</strong>
+            </div>
+            <div class="preview-kpi">
+              <span>Weekly Split</span>
+              <strong>4 / 5 done</strong>
+            </div>
+            <div class="preview-kpi">
+              <span>Balance Score</span>
+              <strong>92 / 100</strong>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:.9rem 1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.4rem;">
+                <strong style="font-size:.9375rem;">Ingredient-Verified Meal Check</strong>
+                <span class="badge badge-success">Verified</span>
+              </div>
+              <div style="font-size:.875rem; color:var(--text-secondary);">
+                Every meal is screened against your registered allergies and intolerances before recommendations are shown.
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:.9rem 1rem; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong style="font-size:.9375rem;">1-on-1 Coaching Session</strong>
+                <div style="font-size:.8125rem; color:var(--text-muted);">Strength &amp; Posture Review &bull; Asia/Manila</div>
+              </div>
+              <span class="badge badge-info">Confirmed</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="container">
-  <div class="feature-grid">
-    <div class="feature">
-      <div class="ic">&#127869;</div>
-      <h4>Custom meal plans</h4>
-      <p>Build meals from real food, track calories, protein, carbs and fats. Save your favourites and reuse them.</p>
+<section class="fl-section">
+  <div class="container">
+    <div class="fl-section-head">
+      <h2>Everything your fitness routine needs</h2>
+      <p>Designed around measurable progress, safe nutrition, and personal coaching.</p>
     </div>
-    <div class="feature alt">
-      <div class="ic">&#128170;</div>
-      <h4>Strength &amp; cardio workouts</h4>
-      <p>Create your own routines or pick from popular templates. Set durations and stay focused.</p>
+
+    <div class="fl-three-grid">
+      <div class="card">
+        <div class="card-body">
+          <div style="color:var(--primary); margin-bottom:.65rem;">{% include "components/icon.html" with name="dumbbell" %}</div>
+          <h3 style="margin:0 0 .4rem; font-size:1.1rem;">Workouts &amp; Imbalance Screening</h3>
+          <p style="margin:0; color:var(--text-secondary);">Schedule strength, cardio, and mobility routines while monitoring push/pull and upper/lower balance.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div style="color:var(--primary); margin-bottom:.65rem;">{% include "components/icon.html" with name="utensils" %}</div>
+          <h3 style="margin:0 0 .4rem; font-size:1.1rem;">Allergy &amp; Dietary Safety</h3>
+          <p style="margin:0; color:var(--text-secondary);">Keep food allergies, intolerances, and dietary preferences separate, with ingredient verification before meal suggestions.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div style="color:var(--primary); margin-bottom:.65rem;">{% include "components/icon.html" with name="users" %}</div>
+          <h3 style="margin:0 0 .4rem; font-size:1.1rem;">Certified Instructor Coaching</h3>
+          <p style="margin:0; color:var(--text-secondary);">Browse coach specializations, book available slots, and receive custom workout plans and fitness assessments.</p>
+        </div>
+      </div>
     </div>
-    <div class="feature cool">
-      <div class="ic">&#128197;</div>
-      <h4>Weekly schedule</h4>
-      <p>Plan workouts on a calendar, mark sessions complete, and see your weekly progress at a glance.</p>
+  </div>
+</section>
+
+<section class="fl-section-alt">
+  <div class="container">
+    <div class="fl-section-head">
+      <h2>How FitLife works</h2>
+      <p>Start with your profile and enter your dashboard right away — upgrade only when you want coaching bundles.</p>
     </div>
-    <div class="feature">
-      <div class="ic">&#128202;</div>
-      <h4>Progress insights</h4>
-      <p>Watch your weekly completion rate, total active minutes, and BMI evolve over time.</p>
+
+    <div class="fl-three-grid">
+      <div class="card">
+        <div class="card-body">
+          <span class="badge badge-neutral" style="margin-bottom:.6rem;">Step 1</span>
+          <h3 style="margin:0 0 .35rem; font-size:1.05rem;">Complete your fitness &amp; allergy profile</h3>
+          <p style="margin:0; color:var(--text-secondary);">Enter body metrics, select your goal, and register food allergies, intolerances, and dietary preferences.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <span class="badge badge-neutral" style="margin-bottom:.6rem;">Step 2</span>
+          <h3 style="margin:0 0 .35rem; font-size:1.05rem;">Plan workouts &amp; check meals</h3>
+          <p style="margin:0; color:var(--text-secondary);">Enter your Member Dashboard immediately to schedule workouts, log weight progress, and verify meals.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <span class="badge badge-neutral" style="margin-bottom:.6rem;">Step 3</span>
+          <h3 style="margin:0 0 .35rem; font-size:1.05rem;">Add coaching when ready</h3>
+          <p style="margin:0; color:var(--text-secondary);">Choose a membership package in PHP (₱) to unlock included 1-on-1 coaching sessions and custom plans.</p>
+        </div>
+      </div>
     </div>
-    <div class="feature alt">
-      <div class="ic">&#127942;</div>
-      <h4>Goal tracking</h4>
-      <p>Set daily calorie goals and preferred workout times that fit your lifestyle.</p>
+  </div>
+</section>
+
+<section class="fl-section">
+  <div class="container">
+    <div class="fl-section-head">
+      <h2>Membership Packages</h2>
+      <p>Transparent Philippine Peso (₱) plans. Activate Starter Basic immediately or request a coaching package anytime.</p>
     </div>
-    <div class="feature cool">
-      <div class="ic">&#128274;</div>
-      <h4>Private &amp; secure</h4>
-      <p>Your data stays yours. Built with Django authentication and CSRF protection.</p>
+
+    <div class="fl-pkg-grid">
+      <div class="card">
+        <div class="card-body">
+          <div style="font-size:.8125rem; font-weight:600; color:var(--text-muted);">Basic</div>
+          <h3 style="margin:.25rem 0 .5rem;">Starter Basic</h3>
+          <div class="tabular-nums" style="font-size:1.65rem; font-weight:800; margin-bottom:.6rem;">₱0 <span style="font-size:.875rem; font-weight:500; color:var(--text-muted);">/ 30 days</span></div>
+          <p style="margin:0; color:var(--text-secondary); font-size:.9rem;">Dashboard, meal allergy checker, workout library, and progress logs.</p>
+        </div>
+      </div>
+      <div class="card" style="border-color:var(--primary);">
+        <div class="card-body">
+          <div style="font-size:.8125rem; font-weight:600; color:var(--primary);">Popular</div>
+          <h3 style="margin:.25rem 0 .5rem;">Pro Fitness</h3>
+          <div class="tabular-nums" style="font-size:1.65rem; font-weight:800; margin-bottom:.6rem;">₱499 <span style="font-size:.875rem; font-weight:500; color:var(--text-muted);">/ 30 days</span></div>
+          <p style="margin:0; color:var(--text-secondary); font-size:.9rem;">Includes 2 instructor coaching sessions per month plus full analytics.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div style="font-size:.8125rem; font-weight:600; color:var(--text-muted);">Elite</div>
+          <h3 style="margin:.25rem 0 .5rem;">Elite Transformation</h3>
+          <div class="tabular-nums" style="font-size:1.65rem; font-weight:800; margin-bottom:.6rem;">₱999 <span style="font-size:.875rem; font-weight:500; color:var(--text-muted);">/ 30 days</span></div>
+          <p style="margin:0; color:var(--text-secondary); font-size:.9rem;">Includes 6 coaching sessions per month and personalized recovery support.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div style="font-size:.8125rem; font-weight:600; color:var(--text-muted);">Bundle</div>
+          <h3 style="margin:.25rem 0 .5rem;">90-Day Body &amp; Meal Bundle</h3>
+          <div class="tabular-nums" style="font-size:1.65rem; font-weight:800; margin-bottom:.6rem;">₱2,499 <span style="font-size:.875rem; font-weight:500; color:var(--text-muted);">/ 90 days</span></div>
+          <p style="margin:0; color:var(--text-secondary); font-size:.9rem;">12 instructor coaching sessions across 90 days with meal &amp; body reviews.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-4" style="background:#0F172A; color:#FFFFFF; border:none;">
+      <div class="card-body" style="padding:2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.25rem;">
+        <div>
+          <h3 style="margin:0 0 .35rem; color:#FFFFFF; font-size:1.35rem;">Ready to start your FitLife plan?</h3>
+          <p style="margin:0; color:#94A3B8;">Create your account in minutes and get immediate access to your Member Dashboard.</p>
+        </div>
+        <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
+          <a href="{% url 'register' %}" class="btn btn-primary">Get Started</a>
+          <a href="{% url 'login' %}" class="btn btn-outline" style="color:#FFFFFF; border-color:rgba(255,255,255,.3);">Log In</a>
+        </div>
+      </div>
     </div>
   </div>
 </section>

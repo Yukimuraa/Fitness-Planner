@@ -1,648 +1,221 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Dashboard — FitLife{% endblock %}
+{% block title %}Member Dashboard — FitLife{% endblock %}
 
 {% block extra_head %}
 <style>
-  /* ---- Dashboard Layout ---- */
-  .dashboard-wrapper {
-    max-width: 1260px;
-    margin: 0 auto;
-    padding: 2rem 1.25rem 4rem;
-  }
-
-  /* ---- Welcome Header ---- */
-  .dash-welcome {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .dash-welcome-text h1 {
-    font-size: 2rem;
-    font-weight: 800;
-    margin: 0 0 .3rem;
-    letter-spacing: -.03em;
-  }
-  .dash-welcome-text p { margin: 0; color: var(--text-muted); font-size: 1rem; }
-  .goal-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: .45rem;
-    padding: .45rem .9rem;
-    border-radius: 999px;
-    font-size: .82rem;
-    font-weight: 700;
-    letter-spacing: .02em;
-    text-transform: uppercase;
-  }
-  .goal-badge.lose_weight { background: #dcfce7; color: #15803d; }
-  .goal-badge.build_muscle { background: #fff7ed; color: #c2410c; }
-  .goal-badge.maintain_weight { background: #ede9fe; color: #6d28d9; }
-  .goal-badge.improve_fitness { background: #e0f2fe; color: #0369a1; }
-
-  /* ---- Stats Row ---- */
-  .stats-row {
+  .dash-main-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .stat-pill {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.2rem 1.4rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: var(--shadow-sm);
-    transition: transform .2s, box-shadow .2s;
-  }
-  .stat-pill:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
-  .stat-pill-icon {
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.35rem;
-    flex-shrink: 0;
-  }
-  .stat-pill-icon.green { background: rgba(22,163,74,.12); }
-  .stat-pill-icon.orange { background: rgba(249,115,22,.12); }
-  .stat-pill-icon.purple { background: rgba(99,102,241,.12); }
-  .stat-pill-icon.blue { background: rgba(14,165,233,.12); }
-  .stat-pill-body .label { font-size: .78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
-  .stat-pill-body .value { font-size: 1.5rem; font-weight: 800; color: var(--text); letter-spacing: -.02em; line-height: 1.1; }
-  .stat-pill-body .meta { font-size: .8rem; color: var(--text-muted); margin-top: .1rem; }
-
-  /* ---- Two-column main grid ---- */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1.55fr 1fr;
     gap: 1.5rem;
     align-items: start;
   }
-  @media (max-width: 980px) {
-    .main-grid { grid-template-columns: 1fr; }
-  }
-
-  /* ---- Panel Cards ---- */
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-  }
-  .panel-header {
-    padding: 1.1rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 700;
-    font-size: 1rem;
-  }
-  .panel-header .panel-title { display: flex; align-items: center; gap: .5rem; }
-  .panel-header .panel-icon { font-size: 1.1rem; }
-  .panel-body { padding: 1.5rem; }
-
-  /* ---- BMI Gauge ---- */
-  .bmi-display {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
-  .bmi-circle {
-    width: 110px; height: 110px;
-    border-radius: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    border: 6px solid;
-    box-shadow: 0 6px 24px rgba(0,0,0,.08);
-  }
-  .bmi-circle .bmi-number { font-size: 1.9rem; font-weight: 800; line-height: 1; }
-  .bmi-circle .bmi-label { font-size: .75rem; font-weight: 600; opacity: .7; }
-  .bmi-circle.underweight { border-color: #0ea5e9; color: #0369a1; }
-  .bmi-circle.normal { border-color: #22c55e; color: #15803d; }
-  .bmi-circle.overweight { border-color: #f97316; color: #c2410c; }
-  .bmi-circle.obese { border-color: #ef4444; color: #991b1b; }
-  .bmi-info h3 { margin: 0 0 .4rem; font-size: 1.2rem; }
-  .bmi-info p { margin: 0; color: var(--text-muted); font-size: .92rem; line-height: 1.5; }
-  .bmi-scale {
-    display: flex;
-    gap: .35rem;
-    margin-top: .8rem;
-    flex-wrap: wrap;
-  }
-  .bmi-scale-seg {
-    padding: .25rem .55rem;
-    border-radius: 999px;
-    font-size: .72rem;
-    font-weight: 600;
-  }
-  .bmi-scale-seg.active-seg { box-shadow: 0 0 0 2px currentColor; }
-  .bmi-seg-underweight { background: #e0f2fe; color: #0369a1; }
-  .bmi-seg-normal { background: #dcfce7; color: #15803d; }
-  .bmi-seg-overweight { background: #fff7ed; color: #c2410c; }
-  .bmi-seg-obese { background: #fee2e2; color: #991b1b; }
-
-  /* ---- Calorie & Macro Bar ---- */
-  .calorie-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+  .meal-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     gap: 1rem;
-    margin-bottom: 1rem;
   }
-  .calorie-big { font-size: 2.5rem; font-weight: 800; letter-spacing: -.03em; color: var(--primary); }
-  .calorie-label { font-size: .85rem; color: var(--text-muted); font-weight: 500; }
-  .macro-bar { margin-top: 1rem; }
+  .meal-plan-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+  }
   .macro-bar-track {
     height: 10px;
     border-radius: 999px;
     background: var(--bg-soft);
     overflow: hidden;
     display: flex;
+    margin: .6rem 0;
   }
-  .macro-seg { height: 100%; transition: width .6s ease; }
-  .macro-seg.prot { background: var(--primary); }
-  .macro-seg.carb { background: var(--accent); }
-  .macro-seg.fat { background: #6366f1; }
-  .macro-legend { display: flex; gap: 1rem; margin-top: .6rem; flex-wrap: wrap; }
-  .macro-legend-item { display: flex; align-items: center; gap: .35rem; font-size: .8rem; font-weight: 600; }
-  .macro-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .macro-dot.prot { background: var(--primary); }
-  .macro-dot.carb { background: var(--accent); }
-  .macro-dot.fat { background: #6366f1; }
-
-  /* ---- Meal Plan Cards ---- */
-  .meal-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-  @media (max-width: 700px) {
-    .meal-grid { grid-template-columns: 1fr; }
-  }
-  .meal-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.1rem 1.25rem;
-    transition: transform .2s, box-shadow .2s;
-    background: var(--surface);
-  }
-  .meal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
-  .meal-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: .6rem;
-  }
-  .meal-type-label { font-size: .73rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
-  .meal-icon-badge {
-    width: 38px; height: 38px;
-    border-radius: 10px;
-    background: var(--bg-soft);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem;
-    flex-shrink: 0;
-  }
-  .meal-title { font-weight: 700; font-size: .98rem; margin: .25rem 0 .35rem; color: var(--text); }
-  .meal-desc { font-size: .82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: .75rem; }
-  .meal-macros { display: flex; gap: .5rem; flex-wrap: wrap; }
-  .macro-tag { padding: .22rem .55rem; border-radius: 999px; font-size: .73rem; font-weight: 700; }
-  .macro-tag.kcal { background: rgba(22,163,74,.1); color: #15803d; }
-  .macro-tag.prot { background: rgba(14,165,233,.1); color: #0369a1; }
-  .macro-tag.carb { background: rgba(249,115,22,.1); color: #c2410c; }
-  .macro-tag.fat { background: rgba(99,102,241,.1); color: #4f46e5; }
-
-  /* ---- Notes Section ---- */
-  .notes-list { list-style: none; padding: 0; margin: 0; }
-  .notes-list li {
-    padding: .8rem 1rem;
-    border-radius: var(--radius-sm);
-    background: var(--bg-soft);
-    margin-bottom: .6rem;
-    font-size: .88rem;
-    line-height: 1.6;
-    color: var(--text);
-    border-left: 3px solid var(--primary);
-  }
-  .notes-list li:last-child { margin-bottom: 0; }
-
-  /* ---- Water Intake ---- */
-  .water-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .macro-seg.prot { background: #16A34A; }
+  .macro-seg.carb { background: #0D9488; }
+  .macro-seg.fat  { background: #475569; }
   .water-glasses {
     display: flex;
     flex-wrap: wrap;
-    gap: .4rem;
-    margin-bottom: .8rem;
+    gap: .45rem;
+    margin: .75rem 0;
   }
   .glass-btn {
-    width: 36px; height: 36px;
-    border-radius: 10px;
-    border: 2px solid var(--border);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
     background: var(--surface);
-    cursor: pointer;
-    font-size: 1.2rem;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .15s ease;
     color: var(--text-muted);
+    font-weight: 700;
+    font-size: .8125rem;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
   }
   .glass-btn.filled {
-    background: #e0f2fe;
-    border-color: #0ea5e9;
-    color: #0369a1;
+    background: #0369A1;
+    border-color: #0369A1;
+    color: #FFFFFF;
   }
-  .glass-btn:hover { transform: scale(1.12); }
-  .water-progress-bar { height: 8px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; margin-bottom: .5rem; }
-  .water-progress-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #38bdf8); border-radius: 999px; transition: width .4s ease; }
-  .water-note { font-size: .8rem; color: var(--text-muted); }
-
-  /* ---- Progress Tracking ---- */
-  .progress-row {
-    display: flex;
-    gap: .75rem;
-    align-items: flex-end;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-  .progress-stat {
-    flex: 1;
-    min-width: 100px;
+  .water-progress-bar {
+    height: 8px;
     background: var(--bg-soft);
-    border-radius: var(--radius-sm);
-    padding: .8rem 1rem;
-    text-align: center;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: .5rem;
   }
-  .progress-stat .val { font-size: 1.4rem; font-weight: 800; color: var(--text); }
-  .progress-stat .lbl { font-size: .75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-top: .1rem; }
-  .weight-change-positive { color: var(--accent); }
-  .weight-change-negative { color: var(--primary); }
-
-  .log-form { display: flex; gap: .6rem; flex-wrap: wrap; align-items: flex-end; }
-  .log-form .form-group { margin: 0; flex: 1; min-width: 120px; }
-  .log-form input { font-size: .9rem; padding: .6rem .8rem; }
-  .log-form label { font-size: .8rem; }
-  .log-form button { padding: .62rem 1.1rem; font-size: .9rem; white-space: nowrap; }
-
-  .progress-entry-list { list-style: none; padding: 0; margin: 1rem 0 0; }
-  .progress-entry-list li {
-    display: flex;
-    justify-content: space-between;
-    padding: .65rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: .88rem;
+  .water-progress-fill {
+    height: 100%;
+    background: #0369A1;
+    transition: width .2s ease;
   }
-  .progress-entry-list li:last-child { border-bottom: none; }
-
-  /* ---- User Info Card ---- */
-  .user-info-grid {
+  .log-form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: .6rem;
+    grid-template-columns: 1fr 1fr auto;
+    gap: .5rem;
+    align-items: end;
   }
-  .info-chip {
-    background: var(--bg-soft);
-    border-radius: var(--radius-sm);
-    padding: .65rem .9rem;
+  @media (max-width: 980px) {
+    .dash-main-grid { grid-template-columns: 1fr; }
   }
-  .info-chip .ic-label { font-size: .75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-  .info-chip .ic-value { font-weight: 700; font-size: .95rem; color: var(--text); margin-top: .15rem; }
-
-  /* ---- Workout mini cards ---- */
-  .upcoming-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: .8rem 0;
-    border-bottom: 1px solid var(--border);
+  @media (max-width: 768px) {
+    .glass-btn { width: 44px; height: 44px; }
   }
-  .upcoming-item:last-child { border-bottom: none; }
-  .upcoming-item .wi-name { font-weight: 600; font-size: .9rem; }
-  .upcoming-item .wi-meta { font-size: .8rem; color: var(--text-muted); margin-top: .1rem; }
+  @media (max-width: 480px) {
+    .log-form-grid { grid-template-columns: 1fr; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-wrapper">
-
   <!-- Welcome Header -->
-  <div class="dash-welcome">
-    <div class="dash-welcome-text">
-      <h1>Hi, {{ user.first_name|default:user.username }} 👋</h1>
-      <p>Here's your personalised health & fitness overview.</p>
-    </div>
-    <div class="flex" style="align-items:center;gap:.75rem;">
-      {% if profile.fitness_goal %}
-        <span class="goal-badge {{ profile.fitness_goal }}">
-          {% if profile.fitness_goal == 'lose_weight' %}🥗{% elif profile.fitness_goal == 'build_muscle' %}💪{% elif profile.fitness_goal == 'maintain_weight' %}⚖️{% elif profile.fitness_goal == 'improve_fitness' %}⚡{% endif %}
-          {{ profile.get_fitness_goal_display }}
-        </span>
-      {% endif %}
-      <a href="{% url 'accounts:select_goal' %}" class="btn btn-outline btn-sm">Change Goal</a>
-    </div>
-  </div>
-
-  <!-- Top Stats Pills -->
-  <div class="stats-row">
-    <div class="stat-pill">
-      <div class="stat-pill-icon green">🔥</div>
-      <div class="stat-pill-body">
-        <div class="label">Daily Calories</div>
-        <div class="value">{{ calorie_recommendation|default:"—" }}</div>
-        <div class="meta">kcal target</div>
-      </div>
-    </div>
-    <div class="stat-pill">
-      <div class="stat-pill-icon blue">💧</div>
-      <div class="stat-pill-body">
-        <div class="label">Water Target</div>
-        <div class="value">{{ water_liters|default:"—" }}<span style="font-size:.9rem;font-weight:500;">L</span></div>
-        <div class="meta">{{ water_glasses|default:"—" }} glasses per day</div>
-      </div>
-    </div>
-    <div class="stat-pill">
-      <div class="stat-pill-icon orange">⚡</div>
-      <div class="stat-pill-body">
-        <div class="label">Active Minutes</div>
-        <div class="value">{{ week_minutes }}</div>
-        <div class="meta">this week</div>
-      </div>
-    </div>
-    <div class="stat-pill">
-      <div class="stat-pill-icon purple">✅</div>
-      <div class="stat-pill-body">
-        <div class="label">Workouts Done</div>
-        <div class="value">{{ completed_count }}<span style="font-size:.9rem;font-weight:500;">/{{ total_count }}</span></div>
-        <div class="meta">{{ completion_pct }}% this week</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main Grid -->
-  <div class="main-grid">
-
-    <!-- LEFT COLUMN -->
+  <div class="page-header">
     <div>
+      <h1 class="page-title">Welcome back, {{ user.username }}</h1>
+      <p class="page-subtitle">
+        Goal: <strong>{{ profile.get_fitness_goal_display_short }}</strong>
+        &bull; Activity: <strong>{{ profile.get_activity_level_display_short }}</strong>
+      </p>
+    </div>
+    <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
+      <a href="{% url 'planner:schedule_create' %}" class="btn btn-primary btn-sm">Schedule Workout</a>
+      <a href="{% url 'planner:meal_health_check' %}" class="btn btn-outline btn-sm">Check Meal Safety</a>
+    </div>
+  </div>
 
-      <!-- BMI + Calorie Panel -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><span class="panel-icon">📊</span> Health Metrics</div>
-          <a href="{% url 'accounts:edit_profile' %}" class="btn btn-ghost btn-sm">Edit Profile</a>
+  <!-- Overview Metrics -->
+  <div class="metric-grid">
+    {% include "components/metric_card.html" with label="Current Weight" value=current_weight|default:"—" meta="kg logged" %}
+    {% include "components/metric_card.html" with label="BMI" value=bmi_score|default:"—" meta=bmi_category %}
+    {% include "components/metric_card.html" with label="Daily Calorie Target" value=calorie_recommendation|default:"—" meta="kcal / day" %}
+    <div class="metric-card">
+      <div class="metric-label">Weekly Workouts</div>
+      <div class="metric-value tabular-nums">{{ completed_count }} / {{ total_count }}</div>
+      <div class="metric-meta tabular-nums">{{ completion_pct }}% complete &bull; {{ week_minutes }} min</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Membership &amp; Credits</div>
+      {% if active_membership %}
+        <div class="metric-value tabular-nums" style="font-size:1.35rem;">{{ active_membership.package.name }}</div>
+        <div class="metric-meta tabular-nums">{{ active_membership.sessions_remaining }} coaching credit{{ active_membership.sessions_remaining|pluralize }} &bull; {{ active_membership.days_remaining }}d left</div>
+      {% else %}
+        <div class="metric-value" style="font-size:1.35rem;">No Active Plan</div>
+        <div class="metric-meta"><a href="{% url 'planner:membership_list' %}">Browse packages</a></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main Two-Column Dashboard -->
+  <div class="dash-main-grid">
+    <!-- Left Column -->
+    <div>
+      <!-- Today's & Upcoming Workouts -->
+      <div class="card mb-3">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Upcoming Workouts</span>
+          <a href="{% url 'planner:schedule_list' %}" class="btn btn-ghost btn-sm">Full Schedule</a>
         </div>
-        <div class="panel-body">
-
-          <!-- BMI Section -->
-          <div class="bmi-display" style="margin-bottom:1.75rem;">
-            {% if bmi_score %}
-              {% if bmi_category == 'Underweight' %}
-                <div class="bmi-circle underweight">
-                  <span class="bmi-number">{{ bmi_score }}</span>
-                  <span class="bmi-label">BMI</span>
-                </div>
-              {% elif bmi_category == 'Normal Weight' %}
-                <div class="bmi-circle normal">
-                  <span class="bmi-number">{{ bmi_score }}</span>
-                  <span class="bmi-label">BMI</span>
-                </div>
-              {% elif bmi_category == 'Overweight' %}
-                <div class="bmi-circle overweight">
-                  <span class="bmi-number">{{ bmi_score }}</span>
-                  <span class="bmi-label">BMI</span>
-                </div>
-              {% else %}
-                <div class="bmi-circle obese">
-                  <span class="bmi-number">{{ bmi_score }}</span>
-                  <span class="bmi-label">BMI</span>
-                </div>
-              {% endif %}
-            {% else %}
-              <div class="bmi-circle normal" style="border-color:var(--border);color:var(--text-muted);">
-                <span class="bmi-number">—</span>
-                <span class="bmi-label">BMI</span>
-              </div>
-            {% endif %}
-
-            <div class="bmi-info">
-              <h3>{{ bmi_category }}</h3>
-              <p>
-                Height: <strong>{{ profile.height_cm|default:"—" }} cm</strong> &middot;
-                Weight: <strong>{{ profile.weight_kg|default:"—" }} kg</strong>
-              </p>
-              <div class="bmi-scale">
-                <span class="bmi-scale-seg bmi-seg-underweight {% if bmi_category == 'Underweight' %}active-seg{% endif %}">Underweight &lt;18.5</span>
-                <span class="bmi-scale-seg bmi-seg-normal {% if bmi_category == 'Normal Weight' %}active-seg{% endif %}">Normal 18.5–24.9</span>
-                <span class="bmi-scale-seg bmi-seg-overweight {% if bmi_category == 'Overweight' %}active-seg{% endif %}">Overweight 25–29.9</span>
-                <span class="bmi-scale-seg bmi-seg-obese {% if bmi_category == 'Obese' %}active-seg{% endif %}">Obese ≥30</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Calorie & Macro Breakdown -->
-          {% if meal_plan %}
-          <div style="border-top: 1px solid var(--border); padding-top: 1.25rem;">
-            <div class="calorie-row">
-              <div>
-                <div class="calorie-label">Daily Calorie Target</div>
-                <div class="calorie-big">{{ meal_plan.calories }}</div>
-                <div class="calorie-label">kcal / day</div>
-              </div>
-              <div style="text-align:right;">
-                <div class="calorie-label">Macro Split</div>
-                <div style="font-size:.9rem; font-weight:700;">
-                  Protein {{ meal_plan.macros.protein_pct }}% &middot;
-                  Carbs {{ meal_plan.macros.carbs_pct }}% &middot;
-                  Fat {{ meal_plan.macros.fat_pct }}%
-                </div>
-              </div>
-            </div>
-            <div class="macro-bar">
-              <div class="macro-bar-track">
-                <div class="macro-seg prot" style="width: {{ meal_plan.macros.protein_pct }}%;"></div>
-                <div class="macro-seg carb" style="width: {{ meal_plan.macros.carbs_pct }}%;"></div>
-                <div class="macro-seg fat" style="width: {{ meal_plan.macros.fat_pct }}%;"></div>
-              </div>
-              <div class="macro-legend">
-                <span class="macro-legend-item"><span class="macro-dot prot"></span>Protein {{ meal_plan.macros.protein }}g</span>
-                <span class="macro-legend-item"><span class="macro-dot carb"></span>Carbs {{ meal_plan.macros.carbs }}g</span>
-                <span class="macro-legend-item"><span class="macro-dot fat"></span>Fat {{ meal_plan.macros.fat }}g</span>
-              </div>
-            </div>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Personalised Meal Plan -->
-      {% if meal_plan %}
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><span class="panel-icon">🍽️</span> Personalised Meal Plan</div>
-          <a href="{% url 'planner:meal_health_check' %}" class="btn btn-ghost btn-sm">Check Meal Allergies &rarr;</a>
-        </div>
-        <div class="panel-body">
-          <div class="meal-grid">
-            {% for meal in meal_plan.meals %}
-            <div class="meal-card">
-              <div class="meal-card-top">
-                <span class="meal-type-label">{{ meal.type }}</span>
-                <span class="meal-icon-badge">{{ meal.image }}</span>
-              </div>
-              <div class="meal-title">{{ meal.title }}</div>
-              <div class="meal-desc">{{ meal.description }}</div>
-              {% if meal.allergy_conflicts %}
-                <div style="background:#fef2f2; border:1px solid #fca5a5; color:#b91c1c; border-radius:8px; padding:.45rem .65rem; font-size:.78rem; margin-bottom:.6rem;">
-                  <strong>⚠️ Allergy Alert ({{ meal.allergy_conflicts|join:", " }}):</strong>
-                  {% if meal.safe_swaps %}{{ meal.safe_swaps.0 }}{% endif %}
-                </div>
-              {% endif %}
-              <div class="meal-macros">
-                <span class="macro-tag kcal">🔥 {{ meal.calories }} kcal</span>
-                <span class="macro-tag prot">💪 {{ meal.protein }}g P</span>
-                <span class="macro-tag carb">🌾 {{ meal.carbs }}g C</span>
-                <span class="macro-tag fat">🥑 {{ meal.fat }}g F</span>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-
-          {% if meal_plan.notes %}
-          <div style="margin-top:1.5rem;">
-            <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:.75rem;">💡 Personalised Nutrition Tips</div>
-            <ul class="notes-list">
-              {% for note in meal_plan.notes %}
-                <li>{{ note }}</li>
+        <div class="card-body">
+          {% if upcoming %}
+            <ul class="item-list">
+              {% for s in upcoming %}
+                <li>
+                  <div>
+                    <div class="name">{{ s.workout.name }}</div>
+                    <div class="desc tabular-nums">{{ s.date|date:"l, M j" }} &bull; {{ s.workout.duration_min }} min</div>
+                  </div>
+                  <div class="flex">
+                    {% if s.completed %}
+                      {% include "components/status_badge.html" with text="Completed" variant="success" %}
+                    {% else %}
+                      <form method="post" action="{% url 'planner:schedule_toggle' s.pk %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button class="btn btn-outline btn-sm" type="submit">Mark done</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </li>
               {% endfor %}
             </ul>
-          </div>
+          {% else %}
+            {% include "components/empty_state.html" with title="No workouts scheduled" message="Plan your next workout session to track weekly progress." cta_label="Schedule Workout" cta_url="/schedule/add/" %}
           {% endif %}
         </div>
       </div>
-      {% endif %}
 
-    </div><!-- /LEFT COLUMN -->
-
-    <!-- RIGHT COLUMN -->
-    <div>
-
-      <!-- User Info Card -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><span class="panel-icon">👤</span> Your Profile</div>
-          <a href="{% url 'accounts:profile' %}" class="btn btn-ghost btn-sm">View</a>
+      <!-- Nutrition Summary & Personalised Meal Plan -->
+      <div class="card mb-3">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem;">
+          <span>Personalised Nutrition &amp; Meal Plan</span>
+          <a href="{% url 'planner:meal_health_check' %}" class="btn btn-ghost btn-sm">Check Meal Allergies &rarr;</a>
         </div>
-        <div class="panel-body">
-          <div class="user-info-grid">
-            <div class="info-chip">
-              <div class="ic-label">Age</div>
-              <div class="ic-value">{{ profile.age|default:"—" }} yrs</div>
+        <div class="card-body">
+          {% if meal_plan %}
+            <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:.5rem; margin-bottom:.5rem;">
+              <strong class="tabular-nums" style="font-size:1.1rem;">{{ meal_plan.calories }} kcal / day</strong>
+              <span class="tabular-nums" style="font-size:.875rem; color:var(--text-secondary);">
+                Protein {{ meal_plan.macros.protein_pct }}% ({{ meal_plan.macros.protein }}g) &bull;
+                Carbs {{ meal_plan.macros.carbs_pct }}% ({{ meal_plan.macros.carbs }}g) &bull;
+                Fat {{ meal_plan.macros.fat_pct }}% ({{ meal_plan.macros.fat }}g)
+              </span>
             </div>
-            <div class="info-chip">
-              <div class="ic-label">Gender</div>
-              <div class="ic-value">{{ profile.get_gender_display|default:"—" }}</div>
+            <div class="macro-bar-track" aria-hidden="true">
+              <div class="macro-seg prot" style="width: {{ meal_plan.macros.protein_pct }}%;"></div>
+              <div class="macro-seg carb" style="width: {{ meal_plan.macros.carbs_pct }}%;"></div>
+              <div class="macro-seg fat" style="width: {{ meal_plan.macros.fat_pct }}%;"></div>
             </div>
-            <div class="info-chip">
-              <div class="ic-label">Height</div>
-              <div class="ic-value">{{ profile.height_cm|default:"—" }} cm</div>
-            </div>
-            <div class="info-chip">
-              <div class="ic-label">Weight</div>
-              <div class="ic-value">{{ profile.weight_kg|default:"—" }} kg</div>
-            </div>
-          </div>
-          <div class="info-chip" style="margin-top:.6rem;">
-            <div class="ic-label">Activity Level</div>
-            <div class="ic-value">{{ profile.get_activity_level_display|default:"—" }}</div>
-          </div>
-          {% if profile.fitness_goal == 'build_muscle' and profile.get_focused_muscles_display %}
-          <div style="margin-top: 1.2rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-            <div style="font-size: .75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .6rem;">🎯 Targeted Muscle Groups</div>
-            <div style="display: flex; flex-wrap: wrap; gap: .4rem;">
-              {% for muscle in profile.get_focused_muscles_display %}
-                <span class="goal-badge build_muscle" style="font-size: .75rem; padding: .25rem .6rem; text-transform: none;">💪 {{ muscle.name }}</span>
+
+            <div class="meal-plan-grid mt-2">
+              {% for meal in meal_plan.meals %}
+                <div class="meal-plan-item">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.35rem;">
+                    <span class="badge badge-neutral">{{ meal.type }}</span>
+                    <span class="tabular-nums" style="font-size:.8125rem; font-weight:700;">{{ meal.calories }} kcal</span>
+                  </div>
+                  <strong style="display:block; margin-bottom:.25rem;">{{ meal.title }}</strong>
+                  <p style="font-size:.875rem; color:var(--text-secondary); margin:0 0 .6rem;">{{ meal.description }}</p>
+                  {% if meal.allergy_conflicts %}
+                    <div class="alert alert-danger" style="padding:.45rem .65rem; font-size:.8125rem; margin-bottom:.5rem;">
+                      <strong>Allergy Alert ({{ meal.allergy_conflicts|join:", " }}):</strong>
+                      {% if meal.safe_swaps %}{{ meal.safe_swaps.0 }}{% endif %}
+                    </div>
+                  {% endif %}
+                  <div class="tabular-nums" style="font-size:.8125rem; color:var(--text-muted);">
+                    P {{ meal.protein }}g &bull; C {{ meal.carbs }}g &bull; F {{ meal.fat }}g
+                  </div>
+                </div>
               {% endfor %}
             </div>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Smart Fitness & Imbalance Coach -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><span class="panel-icon">🧠</span> Smart Fitness &amp; Imbalance</div>
-          <a href="{% url 'planner:smart_suggestions' %}" class="btn btn-ghost btn-sm">Details</a>
-        </div>
-        <div class="panel-body">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem;">
-            <div>
-              <div style="font-size:.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Balance Score</div>
-              <div style="font-size:1.5rem; font-weight:800;">{{ imbalance_report.score }}/100</div>
-            </div>
-            <span class="badge badge-{{ imbalance_report.status_class }}">{{ imbalance_report.status }}</span>
-          </div>
-          {% if imbalance_report.imbalances %}
-            <div style="font-size:.84rem; color:var(--text-muted); margin-bottom:.8rem;">
-              <strong>Top Alert:</strong> {{ imbalance_report.imbalances.0.title }}
-            </div>
-          {% endif %}
-          <div style="border-top:1px solid var(--border); padding-top:.75rem; font-size:.85rem;">
-            <strong>Suggested Plan:</strong> {{ fitness_suggestion.split_title }}<br>
-            <span style="color:var(--text-muted);">{{ fitness_suggestion.days_per_week }} days/wk &bull; ~{{ fitness_suggestion.mins_per_session }} min &bull; HR {{ fitness_suggestion.hr_fat_burn.0 }}–{{ fitness_suggestion.hr_fat_burn.1 }} bpm</span>
-          </div>
-          <a href="{% url 'planner:smart_suggestions' %}" class="btn btn-outline btn-sm" style="width:100%; margin-top:.85rem;">Open Smart Coach</a>
-        </div>
-      </div>
-
-      <!-- Membership & Instructor Coaching -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><span class="panel-icon">🏅</span> Membership &amp; Coaching</div>
-          <a href="{% url 'planner:membership_list' %}" class="btn btn-ghost btn-sm">Plans</a>
-        </div>
-        <div class="panel-body">
-          {% if active_membership %}
-            <div style="margin-bottom:.75rem;">
-              <span class="badge badge-success">{{ active_membership.package.name }}</span>
-              <div style="font-size:.84rem; color:var(--text-muted); margin-top:.35rem;">
-                {{ active_membership.days_remaining }} days left &bull; <strong>{{ active_membership.sessions_remaining }}</strong> coaching session{{ active_membership.sessions_remaining|pluralize }} left
-              </div>
-            </div>
           {% else %}
-            <p style="font-size:.85rem; color:var(--text-muted); margin:0 0 .75rem;">
-              No active membership package. Explore plans to unlock coaching bundles.
-            </p>
+            {% include "components/empty_state.html" with title="Complete body metrics for nutrition targets" message="Add your height, weight, age, and activity level in your profile to calculate daily calories and macros." cta_label="Update Profile" cta_url="/accounts/edit/" %}
           {% endif %}
-          {% if upcoming_bookings %}
-            <div style="border-top:1px solid var(--border); padding-top:.65rem; font-size:.84rem;">
-              <strong>Next Instructor Session:</strong>
-              <div>{{ upcoming_bookings.0.instructor.avatar_emoji }} {{ upcoming_bookings.0.instructor.name }} on {{ upcoming_bookings.0.session_date|date:"M d" }} ({{ upcoming_bookings.0.time_slot }})</div>
-            </div>
-          {% endif %}
-          <div style="display:flex; gap:.5rem; margin-top:.85rem;">
-            <a href="{% url 'planner:membership_list' %}" class="btn btn-outline btn-sm" style="flex:1;">Packages</a>
-            <a href="{% url 'planner:instructor_list' %}" class="btn btn-primary btn-sm" style="flex:1;">Instructors</a>
-          </div>
         </div>
       </div>
 
-      <!-- Coach Plans, Assessments & Notifications -->
+      <!-- Coach Plans, Feedback & Notifications -->
       {% if assigned_workout_plans or instructor_notes or notifications %}
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><span class="panel-icon">🏋️</span> Coach Plans &amp; Updates</div>
+      <div class="card mb-3">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Coach Plans &amp; Updates</span>
           {% if unread_notifications %}
             <form method="post" action="{% url 'planner:notifications_mark_read' %}" style="margin:0;">
               {% csrf_token %}
@@ -650,15 +223,16 @@
             </form>
           {% endif %}
         </div>
-        <div class="panel-body">
+        <div class="card-body">
           {% if assigned_workout_plans %}
-            <div style="margin-bottom:.9rem;">
-              <div style="font-size:.78rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:.4rem;">Instructor Workout Plans</div>
+            <div class="mb-2">
+              <div style="font-size:.8125rem; font-weight:700; color:var(--text-muted); margin-bottom:.45rem;">Instructor Workout Plans</div>
               {% for p in assigned_workout_plans %}
-                <div style="padding:.55rem .7rem; border:1px solid var(--border); border-radius:8px; margin-bottom:.45rem; font-size:.85rem;">
-                  <strong>{{ p.title }}</strong> <span style="color:var(--text-muted);">by {{ p.instructor.name }} ({{ p.frequency_per_week }}x/wk)</span>
+                <div style="padding:.65rem .8rem; border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:.5rem;">
+                  <strong>{{ p.title }}</strong>
+                  <span style="color:var(--text-muted); font-size:.875rem;">by {{ p.instructor.name }} (<span class="tabular-nums">{{ p.frequency_per_week }}x/wk</span>)</span>
                   {% if p.exercises.all %}
-                    <div style="font-size:.78rem; color:var(--text-muted); margin-top:.2rem;">
+                    <div style="font-size:.8125rem; color:var(--text-secondary); margin-top:.25rem;">
                       {% for ex in p.exercises.all|slice:":3" %}{{ ex.exercise_name }} ({{ ex.sets }}x{{ ex.reps }}){% if not forloop.last %}, {% endif %}{% endfor %}
                     </div>
                   {% endif %}
@@ -668,10 +242,10 @@
           {% endif %}
 
           {% if instructor_notes %}
-            <div style="margin-bottom:.9rem;">
-              <div style="font-size:.78rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:.4rem;">Coaching Feedback</div>
+            <div class="mb-2">
+              <div style="font-size:.8125rem; font-weight:700; color:var(--text-muted); margin-bottom:.35rem;">Coaching Feedback</div>
               {% for n in instructor_notes|slice:":2" %}
-                <div style="font-size:.84rem; padding:.45rem 0; border-bottom:1px solid var(--border);">
+                <div style="font-size:.875rem; padding:.45rem 0; border-bottom:1px solid var(--border);">
                   <strong>{{ n.title }}</strong>: {{ n.content }}
                 </div>
               {% endfor %}
@@ -680,9 +254,9 @@
 
           {% if notifications %}
             <div>
-              <div style="font-size:.78rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:.4rem;">Notifications</div>
+              <div style="font-size:.8125rem; font-weight:700; color:var(--text-muted); margin-bottom:.35rem;">Recent Notifications</div>
               {% for notif in notifications|slice:":3" %}
-                <div style="font-size:.82rem; color:var(--text-muted); padding:.35rem 0; border-bottom:1px solid var(--border);">
+                <div style="font-size:.875rem; color:var(--text-secondary); padding:.35rem 0; border-bottom:1px solid var(--border);">
                   <strong style="color:var(--text);">{{ notif.title }}:</strong> {{ notif.message }}
                 </div>
               {% endfor %}
@@ -691,22 +265,83 @@
         </div>
       </div>
       {% endif %}
+    </div>
+
+    <!-- Right Column -->
+    <div>
+      <!-- Smart Fitness & Imbalance -->
+      <div class="card mb-3">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Smart Fitness &amp; Imbalance</span>
+          <a href="{% url 'planner:smart_suggestions' %}" class="btn btn-ghost btn-sm">Details</a>
+        </div>
+        <div class="card-body">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem;">
+            <div>
+              <div style="font-size:.8125rem; font-weight:600; color:var(--text-muted);">Balance Score</div>
+              <div class="tabular-nums" style="font-size:1.6rem; font-weight:800;">{{ imbalance_report.score }}/100</div>
+            </div>
+            {% include "components/status_badge.html" with text=imbalance_report.status variant=imbalance_report.status_class %}
+          </div>
+          {% if imbalance_report.imbalances %}
+            <p style="font-size:.875rem; color:var(--text-secondary); margin:0 0 .75rem;">
+              <strong>Screening Note:</strong> {{ imbalance_report.imbalances.0.title }}
+            </p>
+          {% endif %}
+          <div style="border-top:1px solid var(--border); padding-top:.75rem; font-size:.875rem;">
+            <strong>Suggested Plan:</strong> {{ fitness_suggestion.split_title }}<br>
+            <span class="tabular-nums" style="color:var(--text-muted);">{{ fitness_suggestion.days_per_week }} days/wk &bull; ~{{ fitness_suggestion.mins_per_session }} min</span>
+          </div>
+          <a href="{% url 'planner:smart_suggestions' %}" class="btn btn-outline btn-sm" style="width:100%; margin-top:.85rem;">Open Smart Coach</a>
+        </div>
+      </div>
+
+      <!-- Membership & Coaching -->
+      <div class="card mb-3">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Membership &amp; Coaching</span>
+          <a href="{% url 'planner:membership_list' %}" class="btn btn-ghost btn-sm">Packages</a>
+        </div>
+        <div class="card-body">
+          {% if active_membership %}
+            <div style="margin-bottom:.75rem;">
+              {% include "components/status_badge.html" with text=active_membership.package.name variant="success" %}
+              <div class="tabular-nums" style="font-size:.875rem; color:var(--text-secondary); margin-top:.4rem;">
+                {{ active_membership.days_remaining }} days left &bull; <strong>{{ active_membership.sessions_remaining }}</strong> session{{ active_membership.sessions_remaining|pluralize }} left
+              </div>
+            </div>
+          {% else %}
+            <p style="font-size:.875rem; color:var(--text-secondary); margin:0 0 .75rem;">
+              No active membership package. Browse plans whenever you want.
+            </p>
+          {% endif %}
+
+          {% if upcoming_bookings %}
+            <div style="border-top:1px solid var(--border); padding-top:.65rem; font-size:.875rem;">
+              <strong>Next Appointment:</strong>
+              <div class="tabular-nums">{{ upcoming_bookings.0.instructor.name }} on {{ upcoming_bookings.0.session_date|date:"M d" }} ({{ upcoming_bookings.0.time_slot }})</div>
+            </div>
+          {% endif %}
+          <div style="display:flex; gap:.5rem; margin-top:.85rem;">
+            <a href="{% url 'planner:membership_list' %}" class="btn btn-outline btn-sm" style="flex:1;">Packages</a>
+            <a href="{% url 'planner:instructor_list' %}" class="btn btn-primary btn-sm" style="flex:1;">Book Coach</a>
+          </div>
+        </div>
+      </div>
 
       <!-- Water Intake Tracker -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><span class="panel-icon">💧</span> Water Intake</div>
-        </div>
-        <div class="panel-body">
-          <div class="water-header">
-            <span style="font-size:.9rem;color:var(--text-muted);">Target: <strong style="color:var(--text);">{{ water_liters|default:"—" }} L / {{ water_glasses|default:"—" }} glasses</strong></span>
-            <span id="water-count" style="font-size:.9rem;font-weight:700;color:#0ea5e9;">0 / {{ water_glasses|default:"8" }}</span>
+      <div class="card mb-3">
+        <div class="card-header">Water Intake</div>
+        <div class="card-body">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="tabular-nums" style="font-size:.875rem; color:var(--text-secondary);">Target: <strong>{{ water_liters|default:"—" }} L / {{ water_glasses|default:"—" }} glasses</strong></span>
+            <span id="water-count" class="tabular-nums" style="font-size:.875rem; font-weight:700; color:#0369A1;">0 / {{ water_glasses|default:"8" }}</span>
           </div>
           <div class="water-glasses" id="water-glasses-container">
             {% with total_glasses=water_glasses|default:8 %}
               {% for i in "12345678901234567890"|make_list %}
                 {% if forloop.counter <= total_glasses %}
-                  <button class="glass-btn" onclick="toggleGlass(this)" title="Glass {{ forloop.counter }}">🥛</button>
+                  <button type="button" class="glass-btn" onclick="toggleGlass(this)" title="Glass {{ forloop.counter }}" aria-label="Glass {{ forloop.counter }}">{{ forloop.counter }}</button>
                 {% endif %}
               {% endfor %}
             {% endwith %}
@@ -714,48 +349,42 @@
           <div class="water-progress-bar">
             <div class="water-progress-fill" id="water-bar" style="width: 0%;"></div>
           </div>
-          <div class="water-note">Click each glass as you drink it to track your daily intake.</div>
+          <div style="font-size:.8125rem; color:var(--text-muted);">Click each glass number as you drink it.</div>
         </div>
       </div>
 
-      <!-- Progress Tracking -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><span class="panel-icon">📈</span> Progress Tracking</div>
+      <!-- Fitness Progress & Weight Log -->
+      <div class="card">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Fitness Progress</span>
           <a href="{% url 'accounts:progress' %}" class="btn btn-ghost btn-sm">All Logs</a>
         </div>
-        <div class="panel-body">
-
+        <div class="card-body">
           {% if current_weight %}
-          <div class="progress-row">
-            <div class="progress-stat">
-              <div class="val">{{ starting_weight|default:"—" }} <span style="font-size:.75rem;font-weight:500;">kg</span></div>
-              <div class="lbl">Starting</div>
-            </div>
-            <div class="progress-stat">
-              <div class="val">{{ current_weight }} <span style="font-size:.75rem;font-weight:500;">kg</span></div>
-              <div class="lbl">Current</div>
-            </div>
-            {% if weight_change != None %}
-            <div class="progress-stat">
-              <div class="val {% if weight_change < 0 %}weight-change-negative{% elif weight_change > 0 %}weight-change-positive{% endif %}">
-                {% if weight_change > 0 %}+{% endif %}{{ weight_change }} <span style="font-size:.75rem;font-weight:500;">kg</span>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:.5rem; margin-bottom:1rem; text-align:center;">
+              <div style="padding:.55rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm);">
+                <div class="tabular-nums" style="font-weight:800;">{{ starting_weight|default:"—" }} kg</div>
+                <div style="font-size:.8125rem; color:var(--text-muted);">Start</div>
               </div>
-              <div class="lbl">Change</div>
+              <div style="padding:.55rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm);">
+                <div class="tabular-nums" style="font-weight:800;">{{ current_weight }} kg</div>
+                <div style="font-size:.8125rem; color:var(--text-muted);">Current</div>
+              </div>
+              <div style="padding:.55rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm);">
+                <div class="tabular-nums" style="font-weight:800;">{% if weight_change != None %}{% if weight_change > 0 %}+{% endif %}{{ weight_change }} kg{% else %}—{% endif %}</div>
+                <div style="font-size:.8125rem; color:var(--text-muted);">Change</div>
+              </div>
             </div>
-            {% endif %}
-          </div>
           {% endif %}
 
-          <!-- Inline Weight Log Form -->
           <form method="post" style="margin-bottom: 1rem;">
             {% csrf_token %}
-            <div class="log-form">
-              <div class="form-group">
+            <div class="log-form-grid">
+              <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="{{ progress_form.recorded_at.id_for_label }}">Date</label>
                 {{ progress_form.recorded_at }}
               </div>
-              <div class="form-group">
+              <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="{{ progress_form.weight_kg.id_for_label }}">Weight (kg)</label>
                 {{ progress_form.weight_kg }}
               </div>
@@ -764,71 +393,30 @@
           </form>
 
           {% if recent_progress %}
-          <ul class="progress-entry-list">
             {% for entry in recent_progress %}
-            <li>
-              <span>{{ entry.recorded_at|date:"M j, Y" }}{% if entry.notes %} — {{ entry.notes }}{% endif %}</span>
-              <strong>{{ entry.weight_kg|default:"—" }} kg</strong>
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <p class="text-muted" style="font-size:.88rem;">No weight logged yet. Use the form above to start.</p>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Upcoming Workouts -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><span class="panel-icon">🏋️</span> Upcoming Workouts</div>
-          <a href="{% url 'planner:schedule_create' %}" class="btn btn-primary btn-sm">+ Schedule</a>
-        </div>
-        <div class="panel-body">
-          {% if upcoming %}
-            {% for s in upcoming %}
-            <div class="upcoming-item">
-              <div>
-                <div class="wi-name">{{ s.workout.name }}</div>
-                <div class="wi-meta">{{ s.workout.duration_min }} min &middot; {{ s.date|date:"l, M j" }}</div>
+              <div style="display:flex; justify-content:space-between; padding:.45rem 0; border-bottom:1px solid var(--border); font-size:.875rem;">
+                <span class="tabular-nums" style="color:var(--text-secondary);">{{ entry.recorded_at|date:"M j, Y" }}</span>
+                <strong class="tabular-nums">{{ entry.weight_kg|default:"—" }} kg</strong>
               </div>
-              {% if s.completed %}
-                <span class="badge badge-success">Done</span>
-              {% else %}
-                <form method="post" action="{% url 'planner:schedule_toggle' s.pk %}" style="margin:0;">
-                  {% csrf_token %}
-                  <button class="btn btn-outline btn-sm" type="submit">Mark done</button>
-                </form>
-              {% endif %}
-            </div>
             {% endfor %}
           {% else %}
-          <div style="text-align:center;padding:1.5rem 0;">
-            <p style="color:var(--text-muted);font-size:.9rem;margin:0 0 .75rem;">No workouts scheduled.</p>
-            <a href="{% url 'planner:schedule_create' %}" class="btn btn-primary btn-sm">Schedule Workout</a>
-          </div>
+            <p class="text-muted" style="font-size:.875rem; margin:0;">No weight entries logged yet.</p>
           {% endif %}
         </div>
       </div>
-
-    </div><!-- /RIGHT COLUMN -->
-
-  </div><!-- /main-grid -->
-
-</div>
+    </div>
+  </div>
 
 <script>
   const totalGlasses = {{ water_glasses|default:8 }};
-
   function toggleGlass(btn) {
     btn.classList.toggle('filled');
     updateWater();
   }
-
   function updateWater() {
     const filled = document.querySelectorAll('.glass-btn.filled').length;
     document.getElementById('water-count').textContent = filled + ' / ' + totalGlasses;
-    const pct = (filled / totalGlasses) * 100;
+    const pct = totalGlasses > 0 ? Math.min(100, Math.round((filled / totalGlasses) * 100)) : 0;
     document.getElementById('water-bar').style.width = pct + '%';
   }
 </script>

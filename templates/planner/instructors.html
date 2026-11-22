@@ -1,155 +1,116 @@
 {% extends "base.html" %}
 
-{% block title %}Instructors & Coaching — FitLife{% endblock %}
+{% block title %}Instructors &amp; Coaching — FitLife{% endblock %}
 
 {% block extra_head %}
 <style>
   .inst-layout {
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1.45fr 1fr;
     gap: 1.5rem;
     align-items: start;
-  }
-  @media (max-width: 960px) {
-    .inst-layout { grid-template-columns: 1fr; }
   }
   .inst-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.25rem;
+    gap: 1.15rem;
+    margin-bottom: 1.5rem;
   }
-  .inst-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.4rem;
-    box-shadow: var(--shadow-sm);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .inst-head {
-    display: flex;
-    align-items: center;
-    gap: .9rem;
-    margin-bottom: .85rem;
-  }
-  .inst-avatar {
-    width: 54px;
-    height: 54px;
-    border-radius: 16px;
-    background: rgba(22, 163, 74, .1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.75rem;
-    flex-shrink: 0;
-  }
-  .inst-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
-    font-size: .8rem;
-    color: var(--text-muted);
-    margin: .75rem 0 1rem;
-  }
-  .inst-meta span {
-    background: var(--bg, #f8fafc);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: .2rem .65rem;
-  }
+  @media (max-width: 980px) { .inst-layout { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Certified Instructors</h1>
-      <p class="page-subtitle">Book 1-on-1 coaching sessions for form checks, imbalance correction, and nutrition guidance.</p>
+  {% include "components/page_header.html" with title="Certified Instructors" subtitle="Browse available coaches, check schedules, and request 1-on-1 coaching sessions." action_label="Membership Plans" action_url="/memberships/" %}
+
+  <div class="card mb-3">
+    <div class="card-body" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.75rem;">
+      {% if active_membership %}
+        <div>
+          {% include "components/status_badge.html" with text=active_membership.package.name variant="success" %}
+          <span class="tabular-nums" style="margin-left:.5rem; font-size:.9rem;">
+            <strong>{{ active_membership.sessions_remaining }}</strong> coaching session credit{{ active_membership.sessions_remaining|pluralize }} remaining
+          </span>
+        </div>
+      {% else %}
+        <span style="font-size:.9rem; color:var(--text-secondary);">You need an active membership with coaching credits to submit a booking request.</span>
+      {% endif %}
+      <a href="{% url 'planner:membership_list' %}" class="btn btn-outline btn-sm">View Packages</a>
     </div>
-    {% if active_membership %}
-      <span class="badge badge-success" style="font-size:.88rem; padding:.5rem .9rem;">
-        {{ active_membership.package.name }} &bull; {{ active_membership.sessions_remaining }} session{{ active_membership.sessions_remaining|pluralize }} left
-      </span>
-    {% else %}
-      <a class="btn btn-outline" href="{% url 'planner:membership_list' %}">Get a Membership Package</a>
-    {% endif %}
   </div>
 
   <div class="inst-layout">
     <div>
-      <div class="inst-grid mb-3">
+      <div class="inst-grid">
         {% for inst in instructors %}
-          <div class="inst-card">
-            <div>
-              <div class="inst-head">
+          <div class="card">
+            <div class="card-body" style="display:flex; flex-direction:column; height:100%;">
+              <div style="display:flex; align-items:center; gap:.85rem; margin-bottom:.75rem;">
                 {% if inst.profile_photo %}
-                  <img src="{{ inst.profile_photo.url }}" alt="{{ inst.name }}" style="width:54px; height:54px; border-radius:16px; object-fit:cover; flex-shrink:0;">
+                  <img src="{{ inst.profile_photo.url }}" alt="{{ inst.name }}" style="width:52px; height:52px; border-radius:12px; object-fit:cover; flex-shrink:0;">
                 {% else %}
-                  <div class="inst-avatar">{{ inst.avatar_emoji }}</div>
+                  <span class="app-user-avatar" style="width:52px; height:52px; border-radius:12px; background:var(--primary); border:none; font-size:1.1rem;">{{ inst.name|slice:":1"|upper }}</span>
                 {% endif %}
                 <div>
-                  <h3 style="margin:0; font-size:1.1rem;">{{ inst.name }}</h3>
-                  <div style="color:#16a34a; font-weight:700; font-size:.85rem;">{{ inst.specialty }}</div>
+                  <h3 style="margin:0; font-size:1.05rem;">{{ inst.name }}</h3>
+                  <div style="color:var(--primary); font-weight:600; font-size:.875rem;">{{ inst.specialty }}</div>
                 </div>
               </div>
-              <p style="font-size:.88rem; color:var(--text-muted); margin:0 0 .75rem;">{{ inst.bio }}</p>
-              <div class="inst-meta">
-                <span>⭐ {{ inst.rating }}</span>
-                <span>{{ inst.experience_years }} yrs exp</span>
-                <span>📅 {{ inst.available_days }}</span>
+              <p style="font-size:.875rem; color:var(--text-secondary); margin:0 0 .75rem; flex:1;">{{ inst.bio }}</p>
+              <div style="display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.75rem;">
+                {% include "components/status_badge.html" with text=inst.experience_years|stringformat:"s"|add:" yrs exp" variant="neutral" %}
+                {% include "components/status_badge.html" with text=inst.available_days variant="info" %}
               </div>
               {% if inst.certification %}
-                <p style="font-size:.78rem; color:var(--text-muted); margin:0 0 1rem;">
-                  <strong>Certs:</strong> {{ inst.certification }}
+                <p style="font-size:.8125rem; color:var(--text-muted); margin:0 0 .85rem;">
+                  <strong>Certifications:</strong> {{ inst.certification }}
                 </p>
               {% endif %}
+              <a href="?instructor_id={{ inst.pk }}#book-form" class="btn btn-outline btn-sm" style="width:100%;">
+                Select {{ inst.name }}
+              </a>
             </div>
-            <a href="?instructor_id={{ inst.pk }}#book-form" class="btn btn-outline btn-sm" style="width:100%;">
-              Select {{ inst.name }}
-            </a>
           </div>
+        {% empty %}
+          {% include "components/empty_state.html" with title="No active instructors" message="Check back soon for available coaches." %}
         {% endfor %}
       </div>
 
       <div class="card">
-        <div class="card-header">My Coaching Sessions</div>
-        <div class="card-body" style="overflow-x:auto;">
+        <div class="card-header">My Coaching Bookings</div>
+        <div class="table-wrap">
           {% if bookings %}
-            <table class="table" style="width:100%; border-collapse:collapse;">
+            <table class="fl-table">
               <thead>
-                <tr style="text-align:left; border-bottom:1px solid var(--border);">
-                  <th style="padding:.6rem;">Instructor</th>
-                  <th style="padding:.6rem;">Date &amp; Time</th>
-                  <th style="padding:.6rem;">Focus</th>
-                  <th style="padding:.6rem;">Status</th>
-                  <th style="padding:.6rem;">Action</th>
+                <tr>
+                  <th>Instructor</th>
+                  <th>Date &amp; Time</th>
+                  <th>Focus</th>
+                  <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {% for b in bookings %}
-                  <tr style="border-bottom:1px solid var(--border);">
-                    <td style="padding:.6rem; font-weight:600;">{{ b.instructor.avatar_emoji }} {{ b.instructor.name }}</td>
-                    <td style="padding:.6rem;">{{ b.session_date|date:"M d, Y" }} &bull; {{ b.time_slot }}</td>
-                    <td style="padding:.6rem;">
-                      {{ b.focus_area|default:"General Coaching" }}
-                      {% if b.used_package_session %}
-                        <span class="badge badge-info" style="font-size:.7rem;">Package</span>
+                  <tr>
+                    <td><strong>{{ b.instructor.name }}</strong></td>
+                    <td class="tabular-nums" style="white-space:nowrap;">{{ b.session_date|date:"M d, Y" }} &bull; {{ b.time_slot }}</td>
+                    <td>{{ b.focus_area|default:"General Coaching" }}</td>
+                    <td>
+                      {% if b.status == 'confirmed' or b.status == 'completed' %}
+                        {% include "components/status_badge.html" with text=b.get_status_display variant="success" %}
+                      {% elif b.status == 'pending' or b.status == 'reschedule_requested' %}
+                        {% include "components/status_badge.html" with text=b.get_status_display variant="warning" %}
+                      {% else %}
+                        {% include "components/status_badge.html" with text=b.get_status_display variant="danger" %}
                       {% endif %}
-                    </td>
-                    <td style="padding:.6rem;">
-                      <span class="badge {% if b.status == 'confirmed' or b.status == 'completed' %}badge-success{% elif b.status == 'pending' or b.status == 'reschedule_requested' %}badge-warning{% else %}badge-danger{% endif %}">
-                        {{ b.get_status_display }}
-                      </span>
                       {% if b.status == 'reschedule_requested' and b.suggested_date %}
-                        <div style="font-size:.75rem; color:var(--text-muted); margin-top:.2rem;">
+                        <div class="tabular-nums" style="font-size:.8125rem; color:var(--text-muted); margin-top:.2rem;">
                           Suggested: {{ b.suggested_date|date:"M d" }} {{ b.suggested_time_slot }}
                         </div>
                       {% endif %}
                     </td>
-                    <td style="padding:.6rem;">
+                    <td>
                       {% if b.status == 'pending' or b.status == 'confirmed' or b.status == 'reschedule_requested' %}
                         <form method="post" action="{% url 'planner:instructor_booking_cancel' b.pk %}" style="display:inline;">
                           {% csrf_token %}
@@ -164,18 +125,24 @@
               </tbody>
             </table>
           {% else %}
-            <p class="text-muted" style="margin:0;">You haven't booked any instructor sessions yet.</p>
+            <div style="padding:1.5rem;">
+              {% include "components/empty_state.html" with title="No bookings yet" message="Submit a coaching request using the booking form." %}
+            </div>
           {% endif %}
         </div>
       </div>
     </div>
 
-    <div class="card" id="book-form">
-      <div class="card-header">Book a Coaching Session</div>
+    <div class="card card-form" id="book-form">
+      <div class="card-header">Request a Coaching Session</div>
       <div class="card-body">
         {% if active_membership and active_membership.sessions_remaining > 0 %}
-          <div class="alert alert-success" style="font-size:.85rem; margin-bottom:1rem;">
-            You have <strong>{{ active_membership.sessions_remaining }}</strong> included session{{ active_membership.sessions_remaining|pluralize }} in your {{ active_membership.package.name }} plan!
+          <div class="alert alert-success" style="font-size:.875rem; margin-bottom:1rem;">
+            <span class="tabular-nums"><strong>{{ active_membership.sessions_remaining }}</strong></span> coaching credit{{ active_membership.sessions_remaining|pluralize }} available. Credits are reserved only when the instructor accepts.
+          </div>
+        {% else %}
+          <div class="alert alert-warning" style="font-size:.875rem; margin-bottom:1rem;">
+            An active paid membership with coaching credits is required to submit a booking request.
           </div>
         {% endif %}
         <form method="post">
@@ -187,10 +154,9 @@
               {% if field.errors %}<div class="errorlist">{{ field.errors|striptags }}</div>{% endif %}
             </div>
           {% endfor %}
-          <button type="submit" class="btn btn-primary" style="width:100%;">Confirm Booking</button>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Submit Booking Request</button>
         </form>
       </div>
     </div>
   </div>
-</div>
 {% endblock %}

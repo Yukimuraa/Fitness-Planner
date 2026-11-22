@@ -474,3 +474,23 @@ class FitnessSystemTests(TestCase):
         dash = self.client.get(reverse('planner:index'))
         self.assertEqual(dash.status_code, 200)
         self.assertContains(dash, 'Coach Sam Upper Strength')
+
+        # Verify all Member Portal pages return HTTP 200
+        for member_route in (
+            'planner:meal_list',
+            'planner:meal_health_check',
+            'planner:workout_list',
+            'planner:schedule_list',
+            'planner:smart_suggestions',
+            'planner:instructor_list',
+            'planner:membership_list',
+            'accounts:profile',
+            'accounts:progress',
+        ):
+            self.assertEqual(self.client.get(reverse(member_route)).status_code, 200)
+
+        # Verify public landing page returns HTTP 200
+        self.client.logout()
+        landing = self.client.get(reverse('planner:index'))
+        self.assertEqual(landing.status_code, 200)
+        self.assertContains(landing, 'Build a Stronger, Healthier You.')

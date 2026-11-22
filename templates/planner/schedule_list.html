@@ -3,53 +3,51 @@
 {% block title %}Schedule — FitLife{% endblock %}
 
 {% block content %}
-<div class="container">
-
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">My schedule</h1>
-      <p class="page-subtitle">Your upcoming and past workout sessions.</p>
-    </div>
-    <a class="btn btn-primary" href="{% url 'planner:schedule_create' %}">+ Schedule workout</a>
-  </div>
+  {% include "components/page_header.html" with title="My Workout Schedule" subtitle="Your upcoming and completed workout sessions." action_label="Schedule Workout" action_url="/schedule/add/" %}
 
   <div class="card">
-    <div class="card-body">
+    <div class="table-wrap">
       {% if schedules %}
-        <ul class="item-list">
-          {% for s in schedules %}
-            <li>
-              <div>
-                <div class="name">{{ s.workout.name }}</div>
-                <div class="desc">
-                  {{ s.date|date:"l, F j, Y" }} &middot; {{ s.workout.duration_min }} min
-                </div>
-              </div>
-              <div class="flex">
-                {% if s.completed %}
-                  <span class="badge badge-success">Completed</span>
-                {% else %}
-                  <span class="badge">Pending</span>
-                {% endif %}
-                <form method="post" action="{% url 'planner:schedule_toggle' s.pk %}" style="margin:0;">
-                  {% csrf_token %}
-                  <button class="btn btn-outline btn-sm" type="submit">
-                    {% if s.completed %}Undo{% else %}Mark done{% endif %}
-                  </button>
-                </form>
-              </div>
-            </li>
-          {% endfor %}
-        </ul>
+        <table class="fl-table">
+          <thead>
+            <tr>
+              <th>Workout</th>
+              <th>Date</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in schedules %}
+              <tr>
+                <td><strong>{{ s.workout.name }}</strong></td>
+                <td class="tabular-nums">{{ s.date|date:"l, F j, Y" }}</td>
+                <td class="tabular-nums">{{ s.workout.duration_min }} min</td>
+                <td>
+                  {% if s.completed %}
+                    {% include "components/status_badge.html" with text="Completed" variant="success" %}
+                  {% else %}
+                    {% include "components/status_badge.html" with text="Pending" variant="warning" %}
+                  {% endif %}
+                </td>
+                <td>
+                  <form method="post" action="{% url 'planner:schedule_toggle' s.pk %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button class="btn btn-outline btn-sm" type="submit">
+                      {% if s.completed %}Undo{% else %}Mark done{% endif %}
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       {% else %}
-        <div class="empty-state">
-          <h4>Nothing scheduled yet</h4>
-          <p>Plan your first session to start tracking your progress.</p>
-          <a class="btn btn-primary" href="{% url 'planner:schedule_create' %}">+ Schedule a workout</a>
+        <div style="padding:2rem;">
+          {% include "components/empty_state.html" with title="Nothing scheduled yet" message="Plan your first session to start tracking your weekly progress." cta_label="Schedule a workout" cta_url="/schedule/add/" %}
         </div>
       {% endif %}
     </div>
   </div>
-
-</div>
 {% endblock %}
